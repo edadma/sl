@@ -1,9 +1,9 @@
 ThisBuild / licenses += "ISC" -> url("https://opensource.org/licenses/ISC")
 ThisBuild / versionScheme := Some("semver-spec")
 
-lazy val cross_template = crossProject(JSPlatform, JVMPlatform, NativePlatform).in(file(".")).
+lazy val sl = crossProject(JSPlatform, JVMPlatform, NativePlatform).in(file(".")).
   settings(
-    name := "-cross-template",
+    name := "sl",
     version := "0.1.0",
     scalaVersion := "2.13.6",
     scalacOptions ++=
@@ -16,8 +16,17 @@ lazy val cross_template = crossProject(JSPlatform, JVMPlatform, NativePlatform).
     githubOwner := "edadma",
     githubRepository := name.value,
     mainClass := Some(s"${organization.value}.${name.value}.Main"),
-    libraryDependencies += "org.scalatest" %%% "scalatest" % "3.2.9" % "test",
-    libraryDependencies += "io.github.edadma" %%% "cross-platform" % "0.1.1",
+    libraryDependencies += "org.scalatest" %%% "scalatest" % "3.2.10" % "test",
+    libraryDependencies ++= Seq(
+      "io.github.edadma" %%% "cross-platform" % "0.1.1",
+      "io.github.edadma" %%% "char-reader" % "0.1.7",
+      "io.github.edadma" %%% "datetime" % "0.1.11",
+    ),
+    libraryDependencies ++= Seq(
+      "com.github.scopt" %%% "scopt" % "4.0.1",
+      "com.lihaoyi" %%% "pprint" % "0.6.6" % "test",
+      "org.parboiled" %%% "parboiled" % "2.3.0",
+    ),
     publishMavenStyle := true,
     Test / publishArtifact := false,
     licenses += "ISC" -> url("https://opensource.org/licenses/ISC")
