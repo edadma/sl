@@ -35,6 +35,8 @@ class SLParser(val input: ParserInput) extends Parser {
 
   def sym(s: String): Rule1[String] = rule(quiet(capture(s) ~> ((s: String) => s.trim)))
 
+  def sources: Rule1[SourcesAST] = rule(nl ~ statements ~> SourcesAST)
+
   def statements: Rule1[Seq[StatAST]] = rule(oneOrMore(statement ~ nl))
 
   def varStatement: Rule1[VarStatAST] = rule("var" ~ ident ~ optional("=" ~ expression) ~> VarStatAST)
@@ -168,7 +170,7 @@ class SLParser(val input: ParserInput) extends Parser {
 
   def digits: Rule0 = rule(oneOrMore(CharPredicate.Digit))
 
-  def variable: Rule1[VarExpr] = rule(pos ~ capture(optional('$')) ~ ident ~> VarExpr)
+  def variable: Rule1[VarExpr] = rule(ident ~> VarExpr)
 
   def element: Rule1[ElementExpr] =
     rule(
@@ -189,6 +191,13 @@ class SLParser(val input: ParserInput) extends Parser {
     }
 
   def ident: Rule1[Ident] = rule(identnsp ~ sp)
+
+  def parseSources: SourcesAST =
+    sources.run() match {
+      case Success(ast)           => ast
+      case Failure(e: ParseError) => sys.error("parse error: " + formatError(e))
+      case Failure(e)             => sys.error("Unexpected error during parsing run: " + e)
+    }
 
   def parseExpression: ExprAST =
     expression.run() match {

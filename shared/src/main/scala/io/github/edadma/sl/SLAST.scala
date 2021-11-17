@@ -6,6 +6,8 @@ case class Ident(pos: Int, name: String)
 
 trait StatAST
 
+case class SourcesAST(stats: Seq[StatAST]) extends SLAST
+
 case class VarStatAST(ident: Ident, init: Option[ExprAST]) extends StatAST
 
 case class ExpressionStatAST(expr: ExprAST) extends StatAST
@@ -24,9 +26,9 @@ case class BooleanExpr(pos: SLParser#Position, b: Boolean) extends ExprAST
 
 case class NullExpr(pos: SLParser#Position) extends ExprAST
 
-case class VarExpr(pos: SLParser#Position, user: String, name: Ident) extends ExprAST
+case class VarExpr(name: Ident) extends ExprAST
 
-case class ElementExpr(pos: SLParser#Position, global: String, ids: Seq[Ident]) extends ExprAST
+case class ElementExpr(pos: SLParser#Position, ids: Seq[Ident]) extends ExprAST
 
 case class MapExpr(pairs: Seq[(Ident, SLParser#Position, ExprAST)]) extends ExprAST
 
