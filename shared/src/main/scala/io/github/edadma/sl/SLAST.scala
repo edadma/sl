@@ -22,7 +22,7 @@ case class InfixExprAST(left: ExprAST, op: String, right: ExprAST) extends ExprA
 
 case class StringExpr(pos: SLParser#Position, s: String) extends ExprAST
 
-case class NumberExpr(pos: SLParser#Position, n: BigDecimal) extends ExprAST
+case class NumberExpr(pos: SLParser#Position, n: String) extends ExprAST
 
 case class BooleanExpr(pos: SLParser#Position, b: Boolean) extends ExprAST
 

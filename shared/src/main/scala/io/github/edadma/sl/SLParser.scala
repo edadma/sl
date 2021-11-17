@@ -149,13 +149,13 @@ class SLParser(val input: ParserInput) extends Parser {
   def boolean: Rule1[BooleanExpr] =
     rule(pos ~ (kw("true") | kw("false")) ~> ((p: Position, b: String) => BooleanExpr(p, b == "true")))
 
-  def decimal: Rule1[BigDecimal] =
+  def decimal: Rule1[String] =
     rule {
       capture(
         (zeroOrMore(CharPredicate.Digit) ~ '.' ~ digits | digits ~ '.') ~
           optional((ch('e') | 'E') ~ optional(ch('+') | '-') ~ digits) |
           digits
-      ) ~ sp ~> ((s: String) => BigDecimal(s))
+      ) ~ sp
     }
 
   def integer: Rule1[Int] = rule(capture(digits) ~ sp ~> ((s: String) => s.toInt))
