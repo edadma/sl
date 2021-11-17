@@ -13,14 +13,42 @@ class SLParser(val input: ParserInput) extends Parser {
     override def toString: String = offset.toString
   }
 
-  implicit def wsStr(s: String): Rule0 = rule(str(s) ~ sp)
+  private val delimiters = "[](){}`'\","
+  private val delimiter = CharPredicate(delimiters)
+
+  implicit def wsStr(s: String): Rule0 =
+    if (delimiters.exists(_.toString == s))
+      rule(str(s) ~ sp)
+    else if (s.forall(!_.isLetterOrDigit))
+      rule(str(s) ~ !(CharPredicate.Visible -- CharPredicate.AlphaNum -- delimiter) ~ sp)
+    else
+      rule(str(s) ~ !CharPredicate.AlphaNum ~ sp)
+
+  def pos: Rule1[Position] = rule(push(new Position(cursor)))
+
+  def sp: Rule0 = rule(quiet(zeroOrMore(anyOf(" \t"))))
+
+  def nl: Rule0 = rule(zeroOrMore(anyOf("\r\n")))
 
   def kwcapture(s: String): Rule1[String] =
     rule(quiet(capture(str(s) ~ !CharPredicate.AlphaNum ~ sp) ~> ((s: String) => s.trim)))
 
-  def kw(s: String): Rule0 = rule(quiet(str(s) ~ !CharPredicate.AlphaNum ~ sp))
-
   def sym(s: String): Rule1[String] = rule(quiet(capture(s) ~> ((s: String) => s.trim)))
+
+  def statements: Rule1[Seq[StatAST]] = rule(oneOrMore(statement ~ nl))
+
+  def varStatement: Rule1[VarStatAST] = rule("var" ~ ident ~ optional("=" ~ expression) ~> VarStatAST)
+
+  def defStatement: Rule1[DefStatAST] = rule("def" ~ ident ~ parameters ~ "=" ~ block ~> DefStatAST)
+
+  def parameters: Rule1[Seq[Ident]] = rule("(" ~ zeroOrMore(ident).separatedBy(",") ~ ")" | push(Nil))
+
+  def block: Rule1[Seq[StatAST]] = rule("{" ~ statements ~ "}")
+
+  def statement: Rule1[StatAST] =
+    rule {
+      expression ~> ExpressionStatAST
+    }
 
   def expression: Rule1[ExprAST] = conditional
 
@@ -161,10 +189,6 @@ class SLParser(val input: ParserInput) extends Parser {
     }
 
   def ident: Rule1[Ident] = rule(identnsp ~ sp)
-
-  def pos: Rule1[Position] = rule(push(new Position(cursor)))
-
-  def sp: Rule0 = rule(quiet(zeroOrMore(anyOf(" \t\r\n"))))
 
   def parseExpression: ExprAST =
     expression.run() match {

@@ -4,6 +4,14 @@ trait SLAST
 
 case class Ident(pos: Int, name: String)
 
+trait StatAST
+
+case class VarStatAST(ident: Ident, init: Option[ExprAST]) extends StatAST
+
+case class ExpressionStatAST(expr: ExprAST) extends StatAST
+
+case class DefStatAST(ident: Ident, params: Seq[Ident], body: Seq[StatAST]) extends StatAST
+
 trait ExprAST extends SLAST
 
 case class InfixExprAST(left: ExprAST, op: String, right: ExprAST) extends ExprAST
