@@ -30,26 +30,26 @@ class SLParser(val input: ParserInput) extends Parser {
 
   def nl: Rule0 = rule(zeroOrMore(anyOf("\r\n")))
 
-  def kwcapture(s: String): Rule1[String] =
+  def kw(s: String): Rule1[String] =
     rule(quiet(capture(str(s) ~ !CharPredicate.AlphaNum ~ sp) ~> ((s: String) => s.trim)))
 
   def sym(s: String): Rule1[String] = rule(quiet(capture(s) ~> ((s: String) => s.trim)))
 
-  def sources: Rule1[SourcesAST] = rule(nl ~ statements ~> SourcesAST)
+  def sources: Rule1[SourcesAST] = rule(nl ~ statements ~ EOI ~> SourcesAST)
 
   def statements: Rule1[Seq[StatAST]] = rule(oneOrMore(statement ~ nl))
 
   def varStatement: Rule1[VarStatAST] = rule("var" ~ ident ~ optional("=" ~ expression) ~> VarStatAST)
 
-  def defStatement: Rule1[DefStatAST] = rule("def" ~ ident ~ parameters ~ "=" ~ block ~> DefStatAST)
+  def defStatement: Rule1[DefStatAST] = rule("def" ~ ident ~ parameters ~ "=" ~ (block | expression) ~> DefStatAST)
 
   def parameters: Rule1[Seq[Ident]] = rule("(" ~ zeroOrMore(ident).separatedBy(",") ~ ")" | push(Nil))
 
-  def block: Rule1[Seq[StatAST]] = rule("{" ~ statements ~ "}")
+  def block: Rule1[ExprAST] = rule("{" ~ statements ~ "}" ~> BlockExprAST)
 
   def statement: Rule1[StatAST] =
     rule {
-      expression ~> ExpressionStatAST
+      varStatement | defStatement | expression ~> ExpressionStatAST
     }
 
   def expression: Rule1[ExprAST] = conditional
@@ -73,29 +73,23 @@ class SLParser(val input: ParserInput) extends Parser {
 
   def not: Rule1[ExprAST] =
     rule {
-      kwcapture("not") ~ pos ~ not ~> PrefixExpr |
+      kw("not") ~ pos ~ not ~> PrefixExpr |
         comparitive
     }
 
   def comparitive: Rule1[ExprAST] =
     rule {
-      pos ~ pipe ~ oneOrMore(
-        (sym("<=") | sym(">=") | sym("!=") | sym("<") | sym(">") | sym("=") | kwcapture("div")) ~
-          pos ~ pipe ~> Tuple3[String, Position, ExprAST] _) ~> CompareExpr |
-        pipe
-    }
-
-  def pipe: Rule1[ExprAST] =
-    rule {
-      applicative ~ zeroOrMore(
-        "|" ~ (apply | ident ~ push(Nil) ~> ApplyExpr) ~> PipeExpr
-      )
+      pos ~ applicative ~ oneOrMore(
+        (sym("<=") | sym(">=") | sym("!=") | sym("<") | sym(">") | sym("=") | kw("div")) ~
+          pos ~ applicative ~> Tuple3[String, Position, ExprAST] _) ~> CompareExpr |
+        applicative
     }
 
   def applicative: Rule1[ExprAST] = rule(apply | additive)
 
-  def apply: Rule1[ApplyExpr] =
-    rule(identnsp ~ test(cursorChar != '.' && cursorChar != '[') ~ sp ~ oneOrMore(additive) ~> ApplyExpr)
+  def expressions: Rule1[Seq[ExprAST]] = rule("(" ~ zeroOrMore(expression).separatedBy(",") ~ ")")
+
+  def apply: Rule1[ApplyExpr] = rule(ident ~ expressions ~> ApplyExpr)
 
   def additive: Rule1[ExprAST] =
     rule {
@@ -108,7 +102,7 @@ class SLParser(val input: ParserInput) extends Parser {
   def multiplicative: Rule1[ExprAST] =
     rule {
       pos ~ negative ~ oneOrMore(
-        (sym("*") | sym("/") | kwcapture("mod") | sym("\\")) ~
+        (sym("*") | sym("/") | kw("mod") | sym("\\")) ~
           pos ~ negative ~> Tuple3[String, Position, ExprAST] _) ~> LeftInfixExpr | negative
     }
 
@@ -136,10 +130,8 @@ class SLParser(val input: ParserInput) extends Parser {
       nul |
       variable |
       string |
-      element |
       map |
       seq |
-      "`" ~ expression ~ "`" ~> NonStrictExpr |
       "(" ~ expression ~ ")"
   }
 
@@ -155,7 +147,7 @@ class SLParser(val input: ParserInput) extends Parser {
   def nul: Rule1[NullExpr] = rule(pos ~ "null" ~> NullExpr)
 
   def boolean: Rule1[BooleanExpr] =
-    rule(pos ~ (kwcapture("true") | kwcapture("false")) ~> ((p: Position, b: String) => BooleanExpr(p, b == "true")))
+    rule(pos ~ (kw("true") | kw("false")) ~> ((p: Position, b: String) => BooleanExpr(p, b == "true")))
 
   def decimal: Rule1[BigDecimal] =
     rule {
@@ -172,10 +164,8 @@ class SLParser(val input: ParserInput) extends Parser {
 
   def variable: Rule1[VarExpr] = rule(ident ~> VarExpr)
 
-  def element: Rule1[ElementExpr] =
-    rule(
-      pos ~ capture(optional('$')) ~ '.' ~ zeroOrMore( /*test(!nextIsMethod) ~*/ identnsp)
-        .separatedBy('.') ~ sp ~> ElementExpr)
+//  def element: Rule1[ElementExpr] =
+//    rule(pos ~ zeroOrMore(identnsp).separatedBy(".") ~ sp ~> ElementExpr)
 
   def string: Rule1[StringExpr] =
     rule(pos ~ (singleQuoteString | doubleQuoteString) ~> ((p: Position, s: String) => StringExpr(p, s)))
@@ -184,13 +174,11 @@ class SLParser(val input: ParserInput) extends Parser {
 
   def doubleQuoteString: Rule1[String] = rule('"' ~ capture(zeroOrMore("\\\"" | noneOf("\"\n"))) ~ '"' ~ sp)
 
-  def identnsp: Rule1[Ident] =
+  def ident: Rule1[Ident] =
     rule {
-      push(cursor) ~ !("if" | "true" | "false" | "null" | "elsif" | "with" | "match" | "case" | "no" ~ "output") ~ capture(
-        (CharPredicate.Alpha | '_') ~ zeroOrMore(CharPredicate.AlphaNum | '_')) ~> Ident
+      push(cursor) ~ !("if" | "then" | "true" | "false" | "null" | "elsif" | "with" | "match" | "case" | "for") ~ capture(
+        (CharPredicate.Alpha | '_') ~ zeroOrMore(CharPredicate.AlphaNum | '_')) ~ sp ~> Ident
     }
-
-  def ident: Rule1[Ident] = rule(identnsp ~ sp)
 
   def parseSources: SourcesAST =
     sources.run() match {

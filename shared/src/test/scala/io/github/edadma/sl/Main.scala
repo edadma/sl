@@ -6,6 +6,8 @@ object Main extends App {
 
   val input =
     """
+      |def f(a, b) = a + b
+      |
       |a + b + c
       |""".stripMargin
   val p = new SLParser(input)

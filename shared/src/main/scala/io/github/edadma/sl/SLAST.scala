@@ -12,9 +12,11 @@ case class VarStatAST(ident: Ident, init: Option[ExprAST]) extends StatAST
 
 case class ExpressionStatAST(expr: ExprAST) extends StatAST
 
-case class DefStatAST(ident: Ident, params: Seq[Ident], body: Seq[StatAST]) extends StatAST
+case class DefStatAST(ident: Ident, params: Seq[Ident], body: ExprAST) extends StatAST
 
 trait ExprAST extends SLAST
+
+case class BlockExprAST(stats: Seq[StatAST]) extends ExprAST
 
 case class InfixExprAST(left: ExprAST, op: String, right: ExprAST) extends ExprAST
 
