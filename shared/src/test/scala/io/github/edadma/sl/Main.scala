@@ -12,8 +12,8 @@ object Main extends App {
       |
       |def f(a, b) = {
       | g(a, b)
-      | a + b
       | y = y + 1
+      | a + b
       |}
       |
       |f(3, 4)
