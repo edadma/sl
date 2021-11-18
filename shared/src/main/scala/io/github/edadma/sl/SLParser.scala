@@ -1,7 +1,5 @@
 package io.github.edadma.sl
 
-import io.github.edadma.char_reader.CharReader
-
 import scala.util.{Failure, Success}
 import org.parboiled2._
 
@@ -102,21 +100,20 @@ class SLParser(val input: ParserInput) extends Parser {
 
   def negative: Rule1[ExprAST] =
     rule {
-      sym("-") ~ pos ~ negative ~> PrefixExpr |
-        power
+      sym("-") ~ pos ~ negative ~> PrefixExpr | power
     }
 
   def power: Rule1[ExprAST] =
     rule {
-      pos ~ primary ~ sym("^") ~ pos ~ power ~> RightInfixExpr |
-        applicative
+      pos ~ applicative ~ sym("^") ~ pos ~ power ~> RightInfixExpr | applicative
     }
 
   def applicative: Rule1[ApplyExpr] = rule(primary ~ "(" ~ zeroOrMore(expression).separatedBy(",") ~ ")" ~> ApplyExpr)
 
   def primary: Rule1[ExprAST] = rule {
     boolean |
-      number |
+      decimal |
+      integer |
       nul |
       variable |
       string |
@@ -133,23 +130,20 @@ class SLParser(val input: ParserInput) extends Parser {
 
   def seq: Rule1[SeqExpr] = rule("[" ~ zeroOrMore(expression).separatedBy(",") ~ "]" ~> SeqExpr)
 
-  def number: Rule1[NumberExpr] = rule(pos ~ decimal ~> NumberExpr)
-
   def nul: Rule1[NullExpr] = rule(pos ~ "null" ~> NullExpr)
 
   def boolean: Rule1[BooleanExpr] =
     rule(pos ~ (kw("true") | kw("false")) ~> ((p: Position, b: String) => BooleanExpr(p, b == "true")))
 
-  def decimal: Rule1[String] =
+  def decimal: Rule1[DecimalExpr] =
     rule {
       capture(
         (zeroOrMore(CharPredicate.Digit) ~ '.' ~ digits | digits ~ '.') ~
-          optional((ch('e') | 'E') ~ optional(ch('+') | '-') ~ digits) |
-          digits
-      ) ~ sp
+          optional((ch('e') | 'E') ~ optional(ch('+') | '-') ~ digits)
+      ) ~ sp ~> DecimalExpr
     }
 
-  def integer: Rule1[Int] = rule(capture(digits) ~ sp ~> ((s: String) => s.toInt))
+  def integer: Rule1[IntegerExpr] = rule(capture(digits) ~ sp ~> IntegerExpr)
 
   def digits: Rule0 = rule(oneOrMore(CharPredicate.Digit))
 
@@ -164,7 +158,7 @@ class SLParser(val input: ParserInput) extends Parser {
 
   def ident: Rule1[Ident] =
     rule {
-      push(cursor) ~ !("if" | "then" | "true" | "false" | "null" | "elsif" | "with" | "match" | "case" | "for") ~ capture(
+      pos ~ !("var" | "def" | "mod" | "if" | "then" | "true" | "false" | "null" | "elsif" | "with" | "match" | "case" | "for") ~ capture(
         (CharPredicate.Alpha | '_') ~ zeroOrMore(CharPredicate.AlphaNum | '_')) ~ sp ~> Ident
     }
 

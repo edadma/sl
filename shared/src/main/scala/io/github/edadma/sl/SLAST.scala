@@ -2,7 +2,7 @@ package io.github.edadma.sl
 
 trait SLAST
 
-case class Ident(pos: Int, name: String)
+case class Ident(pos: SLParser#Position, name: String)
 
 trait StatAST
 
@@ -22,7 +22,9 @@ case class InfixExprAST(left: ExprAST, op: String, right: ExprAST) extends ExprA
 
 case class StringExpr(pos: SLParser#Position, s: String) extends ExprAST
 
-case class NumberExpr(pos: SLParser#Position, n: String) extends ExprAST
+case class IntegerExpr(n: String) extends ExprAST
+
+case class DecimalExpr(n: String) extends ExprAST
 
 case class BooleanExpr(pos: SLParser#Position, b: Boolean) extends ExprAST
 
