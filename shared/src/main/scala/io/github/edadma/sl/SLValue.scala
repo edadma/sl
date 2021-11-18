@@ -1,6 +1,8 @@
 package io.github.edadma.sl
 
-trait SLValue
+trait SLValue {
+  val clas: SLClass
+}
 
-case class SLNumber(n: Number) extends SLValue
-case class SLString(s: String) extends SLValue
+case class SLNumber(n: Number) extends SLValue { val clas: SLClass = PrimitiveClass.NumberClass }
+case class SLString(s: String) extends SLValue { val clas: SLClass = PrimitiveClass.StringClass }
