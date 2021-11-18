@@ -77,9 +77,11 @@ class SLParser(val input: ParserInput) extends Parser {
 
   def comparitive: Rule1[ExprAST] =
     rule {
-      pos ~ additive ~ oneOrMore(
-        (sym("<=") | sym(">=") | sym("!=") | sym("<") | sym(">") | sym("=") | kw("div")) ~ pos ~ additive ~> RightOper) ~> CompareExpr | additive
+      pos ~ assignment ~ oneOrMore(
+        (sym("<=") | sym(">=") | sym("!=") | sym("<") | sym(">") | sym("=") | kw("div")) ~ pos ~ assignment ~> RightOper) ~> CompareExpr | assignment
     }
+
+  def assignment: Rule1[ExprAST] = rule(ident ~ "=" ~ expression ~> AssignmentExpr | additive)
 
   def additive: Rule1[ExprAST] =
     rule {
