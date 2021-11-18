@@ -30,8 +30,6 @@ case class NullExpr(pos: SLParser#Position) extends ExprAST
 
 case class VarExpr(name: Ident) extends ExprAST
 
-case class ElementExpr(pos: SLParser#Position, ids: Seq[Ident]) extends ExprAST
-
 case class MapExpr(pairs: Seq[(Ident, SLParser#Position, ExprAST)]) extends ExprAST
 
 case class SeqExpr(elems: Seq[ExprAST]) extends ExprAST
@@ -44,7 +42,10 @@ case class LeftInfixExpr(lpos: SLParser#Position, left: ExprAST, right: Seq[(Str
 case class RightInfixExpr(lpos: SLParser#Position, left: ExprAST, op: String, rpos: SLParser#Position, right: ExprAST)
     extends ExprAST
 
-case class ApplyExpr(name: Ident, args: Seq[ExprAST]) extends ExprAST
+//case class LeftInfixExpr(lpos: SLParser#Position, left: ExprAST, right: Seq[(String, SLParser#Position, ExprAST)])
+//    extends ExprAST
+
+case class ApplyExpr(expr: ExprAST, args: Seq[ExprAST]) extends ExprAST
 
 case class ConditionalAST(cond: ExprAST, yes: ExprAST, no: Option[ExprAST]) extends ExprAST
 
@@ -54,14 +55,6 @@ case class AndExpr(left: ExprAST, right: ExprAST) extends ExprAST
 
 case class CompareExpr(lpos: SLParser#Position, left: ExprAST, right: Seq[(String, SLParser#Position, ExprAST)])
     extends ExprAST
-
-case class MethodExpr(expr: ExprAST, method: Ident) extends ExprAST
-
-case class IndexExpr(expr: ExprAST, pos: SLParser#Position, index: ExprAST) extends ExprAST
-
-case class PipeExpr(left: ExprAST, right: ApplyExpr) extends ExprAST
-
-case class NonStrictExpr(expr: ExprAST) extends ExprAST
 
 case class AssignmentAST(name: Ident, expr: ExprAST) extends SLAST
 

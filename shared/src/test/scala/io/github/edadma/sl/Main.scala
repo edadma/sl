@@ -9,7 +9,10 @@ object Main extends App {
       |var x = 5
       |var y
       |
-      |def f(a, b) = a + b
+      |def f(a, b) = {
+      | g(a, b)
+      | a + b
+      |}
       |
       |f(3, 4)
       |""".stripMargin

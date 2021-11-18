@@ -28,7 +28,7 @@ class SLParser(val input: ParserInput) extends Parser {
 
   def sp: Rule0 = rule(quiet(zeroOrMore(anyOf(" \t"))))
 
-  def nl: Rule0 = rule(zeroOrMore(anyOf("\r\n")))
+  def nl: Rule0 = rule(zeroOrMore(anyOf("\r\n")) ~ sp)
 
   def kw(s: String): Rule1[String] =
     rule(quiet(capture(str(s) ~ !CharPredicate.AlphaNum ~ sp) ~> ((s: String) => s.trim)))
@@ -41,11 +41,11 @@ class SLParser(val input: ParserInput) extends Parser {
 
   def varStatement: Rule1[VarStatAST] = rule("var" ~ ident ~ optional("=" ~ expression) ~> VarStatAST)
 
-  def defStatement: Rule1[DefStatAST] = rule("def" ~ ident ~ parameters ~ "=" ~ (block | expression) ~> DefStatAST)
+  def defStatement: Rule1[DefStatAST] = rule("def" ~ ident ~ parameters ~ "=" ~ expression ~> DefStatAST)
 
   def parameters: Rule1[Seq[Ident]] = rule("(" ~ zeroOrMore(ident).separatedBy(",") ~ ")" | push(Nil))
 
-  def block: Rule1[ExprAST] = rule("{" ~ statements ~ "}" ~> BlockExprAST)
+  def block: Rule1[ExprAST] = rule("{" ~ nl ~ statements ~ "}" ~> BlockExprAST)
 
   def statement: Rule1[StatAST] =
     rule {
@@ -79,17 +79,11 @@ class SLParser(val input: ParserInput) extends Parser {
 
   def comparitive: Rule1[ExprAST] =
     rule {
-      pos ~ applicative ~ oneOrMore(
+      pos ~ additive ~ oneOrMore(
         (sym("<=") | sym(">=") | sym("!=") | sym("<") | sym(">") | sym("=") | kw("div")) ~
-          pos ~ applicative ~> Tuple3[String, Position, ExprAST] _) ~> CompareExpr |
-        applicative
+          pos ~ additive ~> Tuple3[String, Position, ExprAST] _) ~> CompareExpr |
+        additive
     }
-
-  def applicative: Rule1[ExprAST] = rule(apply | additive)
-
-  def expressions: Rule1[Seq[ExprAST]] = rule("(" ~ zeroOrMore(expression).separatedBy(",") ~ ")")
-
-  def apply: Rule1[ApplyExpr] = rule(ident ~ expressions ~> ApplyExpr)
 
   def additive: Rule1[ExprAST] =
     rule {
@@ -114,15 +108,11 @@ class SLParser(val input: ParserInput) extends Parser {
 
   def power: Rule1[ExprAST] =
     rule {
-      pos ~ index ~ sym("^") ~ pos ~ power ~> RightInfixExpr |
-        index
+      pos ~ primary ~ sym("^") ~ pos ~ power ~> RightInfixExpr |
+        applicative
     }
 
-  def index: Rule1[ExprAST] =
-    rule {
-      primary ~ zeroOrMore(
-        "[" ~ pos ~ expression ~ "]" ~> IndexExpr | test(!lastChar.isWhitespace) ~ '.' ~ ident ~> MethodExpr)
-    }
+  def applicative: Rule1[ApplyExpr] = rule(primary ~ "(" ~ zeroOrMore(expression).separatedBy(",") ~ ")" ~> ApplyExpr)
 
   def primary: Rule1[ExprAST] = rule {
     boolean |
@@ -132,6 +122,7 @@ class SLParser(val input: ParserInput) extends Parser {
       string |
       map |
       seq |
+      block |
       "(" ~ expression ~ ")"
   }
 
@@ -163,9 +154,6 @@ class SLParser(val input: ParserInput) extends Parser {
   def digits: Rule0 = rule(oneOrMore(CharPredicate.Digit))
 
   def variable: Rule1[VarExpr] = rule(ident ~> VarExpr)
-
-//  def element: Rule1[ElementExpr] =
-//    rule(pos ~ zeroOrMore(identnsp).separatedBy(".") ~ sp ~> ElementExpr)
 
   def string: Rule1[StringExpr] =
     rule(pos ~ (singleQuoteString | doubleQuoteString) ~> ((p: Position, s: String) => StringExpr(p, s)))
