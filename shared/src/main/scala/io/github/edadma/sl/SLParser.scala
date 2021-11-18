@@ -37,25 +37,24 @@ class SLParser(val input: ParserInput) extends Parser {
 
   def statements: Rule1[Seq[StatAST]] = rule(zeroOrMore(statement ~ nl))
 
-  def varStatement: Rule1[VarStatAST] = rule("var" ~ ident ~ optional("=" ~ expression) ~> VarStatAST)
+  def varStatement: Rule1[VarStat] = rule("var" ~ ident ~ optional("=" ~ expression) ~> VarStat)
 
-  def defStatement: Rule1[DefStatAST] = rule("def" ~ ident ~ parameters ~ "=" ~ expression ~> DefStatAST)
+  def defStatement: Rule1[DefStat] = rule("def" ~ ident ~ parameters ~ "=" ~ expression ~> DefStat)
 
   def parameters: Rule1[Seq[Ident]] = rule("(" ~ zeroOrMore(ident).separatedBy(",") ~ ")" | push(Nil))
 
-  def block: Rule1[ExprAST] = rule("{" ~ nl ~ zeroOrMore(statement ~ nl) ~ "}" ~> BlockExprAST)
+  def block: Rule1[ExprAST] = rule("{" ~ nl ~ zeroOrMore(statement ~ nl) ~ "}" ~> BlockExpr)
 
   def statement: Rule1[StatAST] =
     rule {
-      /*varStatement | defStatement |*/
-      expression ~> ExpressionStatAST
+      varStatement | defStatement | expression ~> ExpressionStat
     }
 
   def expression: Rule1[ExprAST] = conditional
 
   def conditional: Rule1[ExprAST] =
     rule {
-      ("if" ~ condition ~ "then" ~ conditional ~ optional("else" ~ conditional) ~> ConditionalAST) | condition
+      ("if" ~ condition ~ "then" ~ conditional ~ optional("else" ~ conditional) ~> ConditionalExpr) | condition
     }
 
   def condition: Rule1[ExprAST] = disjunctive
@@ -79,24 +78,19 @@ class SLParser(val input: ParserInput) extends Parser {
   def comparitive: Rule1[ExprAST] =
     rule {
       pos ~ additive ~ oneOrMore(
-        (sym("<=") | sym(">=") | sym("!=") | sym("<") | sym(">") | sym("=") | kw("div")) ~
-          pos ~ additive ~> Tuple3[String, Position, ExprAST] _) ~> CompareExpr |
-        additive
+        (sym("<=") | sym(">=") | sym("!=") | sym("<") | sym(">") | sym("=") | kw("div")) ~ pos ~ additive ~> RightOper) ~> CompareExpr | additive
     }
 
   def additive: Rule1[ExprAST] =
     rule {
-      pos ~ multiplicative ~ oneOrMore((sym("++") | sym("+") | sym("-")) ~ pos ~ multiplicative ~> Tuple3[
-        String,
-        Position,
-        ExprAST] _) ~> LeftInfixExpr | multiplicative
+      pos ~ multiplicative ~ oneOrMore((sym("++") | sym("+") | sym("-")) ~ pos ~ multiplicative ~> RightOper) ~> LeftInfixExpr | multiplicative
     }
 
   def multiplicative: Rule1[ExprAST] =
     rule {
       pos ~ negative ~ oneOrMore(
         (sym("*") | sym("/") | kw("mod") | sym("\\")) ~
-          pos ~ negative ~> Tuple3[String, Position, ExprAST] _) ~> LeftInfixExpr | negative
+          pos ~ negative ~> RightOper) ~> LeftInfixExpr | negative
     }
 
   def negative: Rule1[ExprAST] =
@@ -109,7 +103,8 @@ class SLParser(val input: ParserInput) extends Parser {
       pos ~ applicative ~ sym("^") ~ pos ~ power ~> RightInfixExpr | applicative
     }
 
-  def applicative: Rule1[ApplyExpr] = rule(primary ~ "(" ~ zeroOrMore(expression).separatedBy(",") ~ ")" ~> ApplyExpr)
+  def applicative: Rule1[ExprAST] =
+    rule(primary ~ "(" ~ zeroOrMore(expression).separatedBy(",") ~ ")" ~> ApplyExpr | primary)
 
   def primary: Rule1[ExprAST] = rule {
     boolean |
@@ -125,16 +120,14 @@ class SLParser(val input: ParserInput) extends Parser {
   }
 
   def map: Rule1[MapExpr] =
-    rule(
-      "{" ~ zeroOrMore(ident ~ ":" ~ pos ~ expression ~> Tuple3[Ident, Position, ExprAST] _)
-        .separatedBy(",") ~ "}" ~> MapExpr)
+    rule("{" ~ zeroOrMore(ident ~ ":" ~ pos ~ expression ~> MapEntry).separatedBy(",") ~ "}" ~> MapExpr)
 
   def seq: Rule1[SeqExpr] = rule("[" ~ zeroOrMore(expression).separatedBy(",") ~ "]" ~> SeqExpr)
 
-  def nul: Rule1[NullExpr] = rule(pos ~ "null" ~> NullExpr)
+  def nul: Rule1[NullExpr.type] = rule("null" ~ push(NullExpr))
 
   def boolean: Rule1[BooleanExpr] =
-    rule(pos ~ (kw("true") | kw("false")) ~> BooleanExpr)
+    rule((kw("true") | kw("false")) ~> BooleanExpr)
 
   def decimal: Rule1[DecimalExpr] =
     rule {
@@ -150,8 +143,7 @@ class SLParser(val input: ParserInput) extends Parser {
 
   def variable: Rule1[VarExpr] = rule(ident ~> VarExpr)
 
-  def string: Rule1[StringExpr] =
-    rule(pos ~ (singleQuoteString | doubleQuoteString) ~> ((p: Position, s: String) => StringExpr(p, s)))
+  def string: Rule1[StringExpr] = rule((singleQuoteString | doubleQuoteString) ~> StringExpr)
 
   def singleQuoteString: Rule1[String] = rule('\'' ~ capture(zeroOrMore("\\'" | noneOf("'\n"))) ~ '\'' ~ sp)
 
