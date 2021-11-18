@@ -26,7 +26,7 @@ case class IntegerExpr(n: String) extends ExprAST
 
 case class DecimalExpr(n: String) extends ExprAST
 
-case class BooleanExpr(pos: SLParser#Position, b: Boolean) extends ExprAST
+case class BooleanExpr(pos: SLParser#Position, b: String) extends ExprAST
 
 case class NullExpr(pos: SLParser#Position) extends ExprAST
 

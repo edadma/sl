@@ -35,7 +35,7 @@ class SLParser(val input: ParserInput) extends Parser {
 
   def sources: Rule1[SourcesAST] = rule(nl ~ statements ~ EOI ~> SourcesAST)
 
-  def statements: Rule1[Seq[StatAST]] = rule(oneOrMore(statement ~ nl))
+  def statements: Rule1[Seq[StatAST]] = rule(zeroOrMore(statement ~ nl))
 
   def varStatement: Rule1[VarStatAST] = rule("var" ~ ident ~ optional("=" ~ expression) ~> VarStatAST)
 
@@ -43,11 +43,12 @@ class SLParser(val input: ParserInput) extends Parser {
 
   def parameters: Rule1[Seq[Ident]] = rule("(" ~ zeroOrMore(ident).separatedBy(",") ~ ")" | push(Nil))
 
-  def block: Rule1[ExprAST] = rule("{" ~ nl ~ statements ~ "}" ~> BlockExprAST)
+  def block: Rule1[ExprAST] = rule("{" ~ nl ~ zeroOrMore(statement ~ nl) ~ "}" ~> BlockExprAST)
 
   def statement: Rule1[StatAST] =
     rule {
-      varStatement | defStatement | expression ~> ExpressionStatAST
+      /*varStatement | defStatement |*/
+      expression ~> ExpressionStatAST
     }
 
   def expression: Rule1[ExprAST] = conditional
@@ -133,7 +134,7 @@ class SLParser(val input: ParserInput) extends Parser {
   def nul: Rule1[NullExpr] = rule(pos ~ "null" ~> NullExpr)
 
   def boolean: Rule1[BooleanExpr] =
-    rule(pos ~ (kw("true") | kw("false")) ~> ((p: Position, b: String) => BooleanExpr(p, b == "true")))
+    rule(pos ~ (kw("true") | kw("false")) ~> BooleanExpr)
 
   def decimal: Rule1[DecimalExpr] =
     rule {

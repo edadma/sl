@@ -18,7 +18,7 @@ object Main extends App {
 //      |f(3, 4)
 //      |""".stripMargin
     """
-      |a
+      |123
       |""".stripMargin
   val p = new SLParser(input)
   val t = p.parseSources
