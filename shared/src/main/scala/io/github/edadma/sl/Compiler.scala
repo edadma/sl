@@ -25,7 +25,7 @@ object Compiler {
               buf +=
                 (op match {
                   case "+" => Add
-                  case "-" => Add
+                  case "-" => Sub
                 })
           }
         case AssignmentExpr(name, expr) =>

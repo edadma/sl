@@ -15,3 +15,5 @@ case class SLString(s: String) extends SLValue {
 
   override def toString: String = s
 }
+
+class Mutator
