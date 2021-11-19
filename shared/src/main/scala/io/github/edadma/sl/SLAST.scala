@@ -8,9 +8,11 @@ case class SourcesAST(stats: Seq[StatAST]) extends SLAST
 
 trait StatAST
 
-case class DefStat(ident: Ident, params: Seq[Ident], body: ExprAST) extends StatAST
+trait DeclarationAST
 
-case class VarStat(ident: Ident, init: Option[ExprAST]) extends StatAST
+case class DefStat(ident: Ident, params: Seq[Ident], body: ExprAST) extends StatAST with DeclarationAST
+
+case class VarStat(ident: Ident, init: Option[ExprAST]) extends StatAST with DeclarationAST
 
 case class ExpressionStat(expr: ExprAST) extends StatAST
 
