@@ -59,6 +59,7 @@ case class AndExpr(left: ExprAST, right: ExprAST) extends ExprAST
 
 case class CompareExpr(lpos: SLParser#Position, left: ExprAST, right: Seq[RightOper]) extends ExprAST
 
-case class AssignmentExpr(name: Ident, expr: ExprAST) extends ExprAST
+case class AssignmentExpr(lpos: SLParser#Position, lvalue: ExprAST, rpos: SLParser#Position, expr: ExprAST)
+    extends ExprAST
 
 case class ReturnStat(expr: Option[ExprAST]) extends StatAST

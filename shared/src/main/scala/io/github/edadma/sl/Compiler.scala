@@ -13,29 +13,37 @@ object Compiler {
   def compileBlock(stats: Seq[StatAST]): CodeBlock = {
     val buf = new ArrayBuffer[Inst]
 
-    def compileExpr(expr: ExprAST): Unit =
+    def compileExpr(pos: SLParser#Position, expr: ExprAST): Unit = {
+      if (pos ne null)
+        buf += PosInst(pos)
+
       expr match {
-        case IntegerExpr(n) => buf += Push(SLNumber(n.toDouble))
-        case DecimalExpr(n) => buf += Push(SLNumber(n.toDouble))
+        case IntegerExpr(n) => buf += PushInst(SLNumber(n.toDouble))
+        case DecimalExpr(n) => buf += PushInst(SLNumber(n.toDouble))
         case LeftInfixExpr(lpos, left, right) =>
-          compileExpr(left)
+          compileExpr(lpos, left)
           right foreach {
             case RightOper(op, pos, expr) =>
-              compileExpr(expr)
+              compileExpr(pos, expr)
               buf +=
                 (op match {
-                  case "+" => Add
-                  case "-" => Sub
+                  case "+" => AddInst
+                  case "-" => SubInst
                 })
           }
-        case AssignmentExpr(name, expr) =>
-        case ApplyExpr(expr, args)      =>
+        case AssignmentExpr(lpos, lvalue, rpos, expr) =>
+          compileExpr(lpos, lvalue)
+          buf += MutableInst
+          compileExpr(rpos, expr)
+          buf += AssignInst
+        case ApplyExpr(expr, args) =>
       }
+    }
 
     stats foreach {
       case DefStat(ident, params, body) =>
       case VarStat(ident, init)         =>
-      case ExpressionStat(expr)         => compileExpr(expr)
+      case ExpressionStat(expr)         => compileExpr(null, expr)
     }
 
     new CodeBlock(buf)

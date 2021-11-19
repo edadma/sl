@@ -4,19 +4,33 @@ trait Inst {
   def execute(env: Env): Unit
 }
 
-case class Pos(p: SLParser#Position) extends Inst {
+case class PosInst(p: SLParser#Position) extends Inst {
   def execute(env: Env): Unit = env pos p
 }
 
-case class Push(v: SLValue) extends Inst {
+case class PushInst(v: SLValue) extends Inst {
   def execute(env: Env): Unit = env push v
 }
 
-case object Add extends Inst {
+case object AddInst extends Inst {
   def execute(env: Env): Unit = env pushn (env.popn.doubleValue + env.popn.doubleValue)
 }
 
-case object Sub extends Inst {
+case object SubInst extends Inst {
+  def execute(env: Env): Unit = {
+    val subtrahend = env.popn.doubleValue
+
+    env pushn (env.popn.doubleValue - subtrahend)
+  }
+}
+
+case object MutableInst extends Inst {
+  def execute(env: Env): Unit =
+    if (!env.top.isInstanceOf[Mutable])
+      env.problem("not an l-value")
+}
+
+case object AssignInst extends Inst {
   def execute(env: Env): Unit = {
     val subtrahend = env.popn.doubleValue
 
