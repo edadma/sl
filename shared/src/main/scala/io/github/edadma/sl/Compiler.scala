@@ -19,6 +19,16 @@ object Compiler {
         buf += PosInst(pos)
 
       expr match {
+        case CompareExpr(lpos, left, right) =>
+          compileExpr(lpos, left)
+          right foreach {
+            case RightOper(op, pos, expr) =>
+              compileExpr(pos, expr)
+              buf += (op match {
+                case "<=" => LteInst
+                case "<"  => LtInst
+              })
+          }
         case BlockExpr(stats) => compileBlock(stats, buf, fixups)
         case SymExpr(ident)   => buf ++= Seq(PosInst(ident.pos), SLString(ident.name), SymInst)
         case IntegerExpr(n)   => buf += SLNumber(n.toDouble)

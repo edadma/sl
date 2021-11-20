@@ -20,6 +20,14 @@ case object SubInst extends Inst {
   }
 }
 
+case object LteInst extends Inst {
+  def execute(env: Env): Unit = env pushb (env.popn.doubleValue >= env.popn.doubleValue)
+}
+
+case object LtInst extends Inst {
+  def execute(env: Env): Unit = env pushb (env.popn.doubleValue > env.popn.doubleValue)
+}
+
 case object MutableInst extends Inst {
   def execute(env: Env): Unit =
     if (!env.top.isInstanceOf[Mutable])
@@ -55,7 +63,7 @@ case object CallableInst extends Inst {
 
 case object CallInst extends Inst {
   def execute(env: Env): Unit = {
-    val args = Seq.fill(env.popn.intValue)(env.pop)
+    val args = Seq.fill(env.popi.intValue)(env.pop)
 
     env.pop.asInstanceOf[Callable].call(env, args)
   }

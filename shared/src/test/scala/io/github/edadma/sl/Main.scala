@@ -8,11 +8,14 @@ object Main extends App {
     """
       |x = 1
       |
-      |while x do {
+      |while x <= 5 do {
       | println(x)
       | x = x + 1
       |}
       |""".stripMargin
+//    """
+//      |println(123)
+//      |""".stripMargin
   val p = new SLParser(input)
   val t = p.parseSources
 

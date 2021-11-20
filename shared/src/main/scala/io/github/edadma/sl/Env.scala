@@ -17,6 +17,8 @@ abstract class Env {
 
   def pushn(n: Number): Unit = push(SLNumber(n))
 
+  def pushb(b: Boolean): Unit = push(SLBoolean(b))
+
   def pop: SLValue
 
   def top: SLValue
