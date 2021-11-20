@@ -13,7 +13,7 @@ object Compiler {
 
   def compileBlock(stats: Seq[StatAST],
                    buf: ArrayBuffer[Inst] = new ArrayBuffer,
-                   fixups: mutable.Stack[Int] = new mutable.Stack): CodeBlock = {
+                   fixups: mutable.Stack[Int] = new mutable.Stack): ArrayBuffer[Inst] = {
     def compileExpr(pos: SLParser#Position, expr: ExprAST): Unit = {
       if (pos ne null)
         buf += PosInst(pos)
@@ -94,13 +94,13 @@ object Compiler {
       case ExpressionStat(expr)         => compileExpr(null, expr)
     }
 
-    new CodeBlock(buf)
+    buf
   }
 
   def apply(ast: SLAST): CodeBlock =
     ast match {
-      case SourcesAST(stats) => compileBlock(stats)
-      case BlockExpr(stats)  => compileBlock(stats)
+      case SourcesAST(stats) => new CodeBlock(compileBlock(stats))
+//      case BlockExpr(stats)  => new CodeBlock(compileBlock(stats))
     }
 
 }
