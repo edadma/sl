@@ -59,15 +59,9 @@ class SLParser(val input: ParserInput) extends Parser {
 
   def condition: Rule1[ExprAST] = disjunctive
 
-  def disjunctive: Rule1[ExprAST] =
-    rule {
-      conjunctive ~ zeroOrMore("or" ~ conjunctive ~> OrExpr)
-    }
+  def disjunctive: Rule1[ExprAST] = rule(conjunctive ~ zeroOrMore("or" ~ conjunctive ~> OrExpr))
 
-  def conjunctive: Rule1[ExprAST] =
-    rule {
-      not ~ zeroOrMore("and" ~ not ~> AndExpr)
-    }
+  def conjunctive: Rule1[ExprAST] = rule(not ~ zeroOrMore("and" ~ not ~> AndExpr))
 
   def not: Rule1[ExprAST] =
     rule {
@@ -95,15 +89,9 @@ class SLParser(val input: ParserInput) extends Parser {
           pos ~ negative ~> RightOper) ~> LeftInfixExpr | negative
     }
 
-  def negative: Rule1[ExprAST] =
-    rule {
-      sym("-") ~ pos ~ negative ~> PrefixExpr | power
-    }
+  def negative: Rule1[ExprAST] = rule(sym("-") ~ pos ~ negative ~> PrefixExpr | power)
 
-  def power: Rule1[ExprAST] =
-    rule {
-      pos ~ applicative ~ sym("^") ~ pos ~ power ~> RightInfixExpr | applicative
-    }
+  def power: Rule1[ExprAST] = rule(pos ~ applicative ~ sym("^") ~ pos ~ power ~> RightInfixExpr | applicative)
 
   def applicative: Rule1[ExprAST] =
     rule(
