@@ -36,7 +36,24 @@ object Compiler {
           buf += MutableInst
           compileExpr(rpos, expr)
           buf += AssignInst
-        case ApplyExpr(pos, expr, args) =>
+        case ApplyExpr(fpos, expr, calls) =>
+          def generateCall(as: Args): Unit = {
+            buf += CallableInst
+            as.args foreach {
+              case Arg(pos, expr) => compileExpr(pos, expr)
+            }
+            buf += SLInteger(as.args.length)
+            // todo: as.pos wasn't pushed
+            buf += CallInst
+          }
+
+          compileExpr(fpos, expr)
+          generateCall(calls.head)
+
+          for (a <- calls.tail) {
+            buf += CallableInst
+            generateCall(a)
+          }
       }
     }
 

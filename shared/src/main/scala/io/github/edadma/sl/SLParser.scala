@@ -50,12 +50,7 @@ class SLParser(val input: ParserInput) extends Parser {
       varStatement | defStatement | expression ~> ExpressionStat
     }
 
-  def expression: Rule1[ExprAST] = conditional
-
-  def conditional: Rule1[ExprAST] =
-    rule {
-      ("if" ~ condition ~ "then" ~ conditional ~ optional("else" ~ conditional) ~> ConditionalExpr) | condition
-    }
+  def expression: Rule1[ExprAST] = condition
 
   def condition: Rule1[ExprAST] = disjunctive
 
@@ -75,7 +70,12 @@ class SLParser(val input: ParserInput) extends Parser {
         (sym("<=") | sym(">=") | sym("!=") | sym("<") | sym(">") | sym("=") | kw("div")) ~ pos ~ assignment ~> RightOper) ~> CompareExpr | assignment
     }
 
-  def assignment: Rule1[ExprAST] = rule(pos ~ additive ~ "=" ~ pos ~ additive ~> AssignmentExpr | additive)
+  def assignment: Rule1[ExprAST] = rule(pos ~ applicative ~ "=" ~ pos ~ conditional ~> AssignmentExpr | conditional)
+
+  def conditional: Rule1[ExprAST] =
+    rule {
+      ("if" ~ additive ~ "then" ~ conditional ~ optional("else" ~ conditional) ~> ConditionalExpr) | additive
+    }
 
   def additive: Rule1[ExprAST] =
     rule {

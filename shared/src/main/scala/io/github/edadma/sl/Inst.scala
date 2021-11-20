@@ -35,10 +35,14 @@ case object AssignInst extends Inst {
   }
 }
 
+case object CallableInst extends Inst {
+  def execute(env: Env): Unit = if (!env.top.isInstanceOf[Callable]) env.problem(s"not callable: ${env.top}")
+}
+
 case object CallInst extends Inst {
-  def execute(env: Env): Unit =
-    env.pop match {
-      case c: Callable => c.call(env, Seq.fill(env.popn.intValue)(env.pop))
-      case x           => env.problem(s"not callable: $x")
-    }
+  def execute(env: Env): Unit = {
+    val args = Seq.fill(env.popn.intValue)(env.pop)
+
+    env.pop.asInstanceOf[Callable].call(env, args)
+  }
 }

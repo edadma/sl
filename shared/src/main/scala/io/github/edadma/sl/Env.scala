@@ -1,5 +1,7 @@
 package io.github.edadma.sl
 
+import scala.collection.mutable
+
 abstract class Env {
 
   var _pos: Option[SLParser#Position] = None
@@ -29,4 +31,17 @@ abstract class Env {
     sys.error(msg)
   }
 
+}
+
+class SimpleEnv extends Env {
+  val stack = new mutable.Stack[SLValue]
+  val vars = new mutable.HashMap[String, SLValue]
+
+  override def push(v: SLValue): Unit = stack push v
+
+  override def pop: SLValue = stack.pop()
+
+  override def top: SLValue = stack.top
+
+  override def symbol(name: String): Option[SLValue] = vars get name
 }

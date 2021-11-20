@@ -8,8 +8,6 @@ object Main extends App {
     """
       |var x = 5
       |
-      |var y
-      |
       |def f(a, b) = {
       | g(a, b)
       | y = y + 1
