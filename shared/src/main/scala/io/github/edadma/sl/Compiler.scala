@@ -13,6 +13,7 @@ object Compiler {
   def compileBlock(stats: Seq[StatAST]): CodeBlock = {
     val buf = new ArrayBuffer[Inst]
 
+    def loop()
     def compileExpr(pos: SLParser#Position, expr: ExprAST): Unit = {
       if (pos ne null)
         buf += PosInst(pos)
@@ -54,6 +55,7 @@ object Compiler {
             buf += CallableInst
             generateCall(a)
           }
+        case WhileExpr(pos, cond, body, no) =>
       }
     }
 

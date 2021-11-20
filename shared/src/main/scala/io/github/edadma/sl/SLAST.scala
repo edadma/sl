@@ -55,7 +55,9 @@ case class Args(pos: SLParser#Position, args: Seq[Arg])
 
 case class ApplyExpr(pos: SLParser#Position, expr: ExprAST, calls: Seq[Args]) extends ExprAST
 
-case class ConditionalExpr(cond: ExprAST, yes: ExprAST, no: Option[ExprAST]) extends ExprAST
+case class ConditionalExpr(pos: SLParser#Position, cond: ExprAST, yes: ExprAST, no: Option[ExprAST]) extends ExprAST
+
+case class WhileExpr(pos: SLParser#Position, cond: ExprAST, body: ExprAST, no: Option[ExprAST]) extends ExprAST
 
 case class OrExpr(left: ExprAST, right: ExprAST) extends ExprAST
 

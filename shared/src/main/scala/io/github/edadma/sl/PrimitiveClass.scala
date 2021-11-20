@@ -5,7 +5,8 @@ case class PrimitiveClass(name: String, supers: Seq[SLClass]) extends SLClass {
 }
 
 object PrimitiveClass {
-  val AnyClass: PrimitiveClass = PrimitiveClass("Number", Nil)
+  val AnyClass: PrimitiveClass = PrimitiveClass("Any", Nil)
   val NumberClass: PrimitiveClass = PrimitiveClass("Number", Seq(AnyClass))
+  val BooleanClass: PrimitiveClass = PrimitiveClass("Boolean", Seq(AnyClass))
   val StringClass: PrimitiveClass = PrimitiveClass("String", Seq(AnyClass))
 }

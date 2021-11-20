@@ -6,15 +6,12 @@ object Main extends App {
 
   val input =
     """
-      |var x = 5
+      |x = 1
       |
-      |def f(a, b) = {
-      | g(a, b)
-      | y = y + 1
-      | a + b
+      |while x do {
+      | println(x)
+      | x = x + 1
       |}
-      |
-      |f(3, 4)
       |""".stripMargin
   val p = new SLParser(input)
   val t = p.parseSources

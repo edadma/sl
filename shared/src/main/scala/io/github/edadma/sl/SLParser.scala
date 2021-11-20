@@ -50,7 +50,18 @@ class SLParser(val input: ParserInput) extends Parser {
       varStatement | defStatement | expression ~> ExpressionStat
     }
 
-  def expression: Rule1[ExprAST] = condition
+  def expression: Rule1[ExprAST] = assignment
+
+  def assignment: Rule1[ExprAST] = rule(pos ~ applicative ~ "=" ~ pos ~ construct ~> AssignmentExpr | construct)
+
+  def optElse: Rule1[Option[ExprAST]] = rule(optional("else" ~ construct))
+
+  def construct: Rule1[ExprAST] =
+    rule {
+      "if" ~ pos ~ condition ~ "then" ~ construct ~ optElse ~> ConditionalExpr |
+        "while" ~ pos ~ condition ~ "do" ~ construct ~ optElse ~> WhileExpr |
+        condition
+    }
 
   def condition: Rule1[ExprAST] = disjunctive
 
@@ -66,20 +77,13 @@ class SLParser(val input: ParserInput) extends Parser {
 
   def comparitive: Rule1[ExprAST] =
     rule {
-      pos ~ assignment ~ oneOrMore(
-        (sym("<=") | sym(">=") | sym("!=") | sym("<") | sym(">") | sym("=") | kw("div")) ~ pos ~ assignment ~> RightOper) ~> CompareExpr | assignment
-    }
-
-  def assignment: Rule1[ExprAST] = rule(pos ~ applicative ~ "=" ~ pos ~ conditional ~> AssignmentExpr | conditional)
-
-  def conditional: Rule1[ExprAST] =
-    rule {
-      ("if" ~ additive ~ "then" ~ conditional ~ optional("else" ~ conditional) ~> ConditionalExpr) | additive
+      pos ~ additive ~ oneOrMore(
+        (sym("<=") | sym(">=") | sym("!=") | sym("<") | sym(">") | sym("=") | kw("div")) ~ pos ~ additive ~> RightOper) ~> CompareExpr | additive
     }
 
   def additive: Rule1[ExprAST] =
     rule {
-      pos ~ multiplicative ~ oneOrMore((sym("++") | sym("+") | sym("-")) ~ pos ~ multiplicative ~> RightOper) ~> LeftInfixExpr | multiplicative
+      pos ~ multiplicative ~ oneOrMore((sym("+") | sym("-")) ~ pos ~ multiplicative ~> RightOper) ~> LeftInfixExpr | multiplicative
     }
 
   def multiplicative: Rule1[ExprAST] =
@@ -142,7 +146,7 @@ class SLParser(val input: ParserInput) extends Parser {
 
   def ident: Rule1[Ident] =
     rule {
-      pos ~ !("var" | "def" | "mod" | "if" | "then" | "true" | "false" | "null" | "elsif" | "with" | "match" | "case" | "for") ~ capture(
+      pos ~ !("var" | "val" | "def" | "mod" | "if" | "then" | "true" | "false" | "null" | "elsif" | "with" | "match" | "case" | "for" | "do" | "while") ~ capture(
         (CharPredicate.Alpha | '_') ~ zeroOrMore(CharPredicate.AlphaNum | '_')) ~ sp ~> Ident
     }
 

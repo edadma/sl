@@ -23,6 +23,12 @@ case class SLNumber(n: Number) extends SLValue {
   override def toString: String = n.toString
 }
 
+case class SLBoolean(b: Boolean) extends SLValue {
+  val clas: SLClass = PrimitiveClass.BooleanClass
+
+  override def toString: String = b.toString
+}
+
 case class SLString(s: String) extends SLValue {
   val clas: SLClass = PrimitiveClass.StringClass
 
