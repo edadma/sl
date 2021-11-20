@@ -21,14 +21,12 @@ case class SLString(s: String) extends SLValue {
   override def toString: String = s
 }
 
-trait Applicable {
-  def call(args: Seq[SLValue]): SLValue
-}
+trait Applicable
 
-case class SLFunction(f: String) extends SLValue {
+case class SLFunction(name: String, f: Seq[SLValue] => SLValue) extends SLValue with Applicable {
   val clas: SLClass = PrimitiveClass.StringClass
 
-  override def toString: String = s
+  override def toString: String = s"[function: $name]"
 }
 
 abstract class Mutable extends SLValue {
