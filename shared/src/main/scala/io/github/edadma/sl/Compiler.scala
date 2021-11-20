@@ -36,7 +36,7 @@ object Compiler {
           buf += MutableInst
           compileExpr(rpos, expr)
           buf += AssignInst
-        case ApplyExpr(expr, args) =>
+        case ApplyExpr(pos, expr, args) =>
       }
     }
 

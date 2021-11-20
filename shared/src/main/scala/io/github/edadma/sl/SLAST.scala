@@ -49,7 +49,11 @@ case class LeftInfixExpr(lpos: SLParser#Position, left: ExprAST, right: Seq[Righ
 case class RightInfixExpr(lpos: SLParser#Position, left: ExprAST, op: String, rpos: SLParser#Position, right: ExprAST)
     extends ExprAST
 
-case class ApplyExpr(expr: ExprAST, args: Seq[ExprAST]) extends ExprAST
+case class Arg(pos: SLParser#Position, expr: ExprAST)
+
+case class Args(args: Seq[Arg])
+
+case class ApplyExpr(pos: SLParser#Position, expr: ExprAST, args: Seq[Args]) extends ExprAST
 
 case class ConditionalExpr(cond: ExprAST, yes: ExprAST, no: Option[ExprAST]) extends ExprAST
 
