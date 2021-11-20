@@ -1,5 +1,6 @@
 package io.github.edadma.sl
 
+import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 
 object Compiler {
@@ -10,17 +11,18 @@ object Compiler {
     declrs.asInstanceOf[Seq[DeclarationAST]]
   }
 
-  def compileBlock(stats: Seq[StatAST]): CodeBlock = {
-    val buf = new ArrayBuffer[Inst]
-
-    def loop()
+  def compileBlock(stats: Seq[StatAST],
+                   buf: ArrayBuffer[Inst] = new ArrayBuffer,
+                   fixups: mutable.Stack[Int] = new mutable.Stack): CodeBlock = {
     def compileExpr(pos: SLParser#Position, expr: ExprAST): Unit = {
       if (pos ne null)
         buf += PosInst(pos)
 
       expr match {
-        case IntegerExpr(n) => buf += SLNumber(n.toDouble)
-        case DecimalExpr(n) => buf += SLNumber(n.toDouble)
+        case BlockExpr(stats) => compileBlock(stats, buf, fixups)
+        case SymExpr(ident)   => buf ++= Seq(PosInst(ident.pos), SLString(ident.name), SymInst)
+        case IntegerExpr(n)   => buf += SLNumber(n.toDouble)
+        case DecimalExpr(n)   => buf += SLNumber(n.toDouble)
         case LeftInfixExpr(lpos, left, right) =>
           compileExpr(lpos, left)
           right foreach {
@@ -56,6 +58,33 @@ object Compiler {
             generateCall(a)
           }
         case WhileExpr(pos, cond, body, no) =>
+          def forward(): Unit = {
+            fixups push buf.length
+            buf += null
+          }
+
+          def patch(): Unit = {
+            val fixup = fixups.pop()
+
+            buf(fixup) = SLInteger(buf.length - fixup)
+          }
+
+          def loop(body: => Unit): Unit = {
+            val len = buf.length
+
+            body
+            buf += SLInteger(-(buf.length - len) - 2)
+            buf += BranchInst
+          }
+
+          loop {
+            compileExpr(pos, cond)
+            forward()
+            buf += BranchIfFalseInst
+            compileExpr(null, body)
+          }
+
+          patch()
       }
     }
 

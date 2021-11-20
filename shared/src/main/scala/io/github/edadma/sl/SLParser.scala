@@ -136,7 +136,7 @@ class SLParser(val input: ParserInput) extends Parser {
 
   def digits: Rule0 = rule(oneOrMore(CharPredicate.Digit))
 
-  def variable: Rule1[VarExpr] = rule(ident ~> VarExpr)
+  def variable: Rule1[SymExpr] = rule(ident ~> SymExpr)
 
   def string: Rule1[StringExpr] = rule((singleQuoteString | doubleQuoteString) ~> StringExpr)
 

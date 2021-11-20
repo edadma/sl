@@ -18,4 +18,9 @@ object Main extends App {
 
   pprintln(t)
 
+  val c = Compiler(t)
+  val e = new SimpleEnv(c)
+
+  e.run()
+
 }

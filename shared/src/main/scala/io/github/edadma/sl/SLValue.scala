@@ -17,6 +17,18 @@ case class SLInteger(n: Int) extends SLValue {
   override def toString: String = n.toString
 }
 
+case object SLVoid extends SLValue {
+  val clas: SLClass = PrimitiveClass.UnitClass
+
+  override def toString: String = "()"
+}
+
+case object SLNull extends SLValue {
+  val clas: SLClass = PrimitiveClass.NullClass
+
+  override def toString: String = "null"
+}
+
 case class SLNumber(n: Number) extends SLValue {
   val clas: SLClass = PrimitiveClass.NumberClass
 

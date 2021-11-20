@@ -6,6 +6,8 @@ abstract class Env {
 
   var _pos: Option[SLParser#Position] = None
 
+  def run(): Unit
+
   def branch(disp: Int): Unit
 
   def pos(p: SLParser#Position): Unit = _pos = Some(p)
@@ -38,7 +40,7 @@ abstract class Env {
 
   def pops: String = pop.toString
 
-  def symbol(name: String): Option[SLValue]
+  def symbol(name: String): SLValue
 
   def problem(msg: String): Nothing = {
     // todo: use _pos
@@ -49,8 +51,22 @@ abstract class Env {
 
 class SimpleEnv(block: CodeBlock) extends Env {
   val stack = new mutable.Stack[SLValue]
-  val vars = new mutable.HashMap[String, SLValue]
+  val vars: mutable.Map[String, SLValue] =
+    mutable.HashMap[String, SLValue](
+      "println" -> SLFunction("println", args => {
+        println(args mkString ", ")
+        SLVoid
+      })
+    )
   var ip = 0
+
+  def run(): Unit =
+    while (ip < block.length) {
+      val inst = block(ip)
+
+      ip += 1
+      inst execute this
+    }
 
   override def push(v: SLValue): Unit = stack push v
 
@@ -60,5 +76,13 @@ class SimpleEnv(block: CodeBlock) extends Env {
 
   override def top: SLValue = stack.top
 
-  override def symbol(name: String): Option[SLValue] = vars get name
+  override def symbol(name: String): SLValue =
+    vars get name match {
+      case Some(value) => value
+      case None =>
+        val mut = new VarMutable(SLNull)
+
+        vars(name) = mut
+        mut
+    }
 }

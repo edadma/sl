@@ -60,3 +60,7 @@ case object CallInst extends Inst {
     env.pop.asInstanceOf[Callable].call(env, args)
   }
 }
+
+case object SymInst extends Inst {
+  def execute(env: Env): Unit = env.symbol(env.pops)
+}
