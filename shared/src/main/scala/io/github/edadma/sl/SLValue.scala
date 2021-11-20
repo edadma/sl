@@ -3,10 +3,12 @@ package io.github.edadma.sl
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 
-trait SLValue {
+trait SLValue extends Inst {
   def clas: SLClass
 
   def deref: SLValue = this
+
+  def execute(env: Env): Unit = env push this
 }
 
 case class SLNumber(n: Number) extends SLValue {
@@ -21,10 +23,14 @@ case class SLString(s: String) extends SLValue {
   override def toString: String = s
 }
 
-trait Applicable
+trait Callable {
+  def call(env: Env, args: Seq[SLValue]): Unit
+}
 
-case class SLFunction(name: String, f: Seq[SLValue] => SLValue) extends SLValue with Applicable {
+case class SLFunction(name: String, f: Seq[SLValue] => SLValue) extends SLValue with Callable {
   val clas: SLClass = PrimitiveClass.StringClass
+
+  def call(env: Env, args: Seq[SLValue]): Unit = env push f(args)
 
   override def toString: String = s"[function: $name]"
 }

@@ -95,7 +95,7 @@ class SLParser(val input: ParserInput) extends Parser {
 
   def applicative: Rule1[ExprAST] =
     rule(
-      pos ~ primary ~ oneOrMore("(" ~ zeroOrMore(pos ~ expression ~> Arg).separatedBy(",") ~ ")" ~> Args) ~> ApplyExpr | primary)
+      pos ~ primary ~ oneOrMore(pos ~ "(" ~ zeroOrMore(pos ~ expression ~> Arg).separatedBy(",") ~ ")" ~> Args) ~> ApplyExpr | primary)
 
   def primary: Rule1[ExprAST] = rule {
     boolean |

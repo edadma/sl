@@ -51,7 +51,7 @@ case class RightInfixExpr(lpos: SLParser#Position, left: ExprAST, op: String, rp
 
 case class Arg(pos: SLParser#Position, expr: ExprAST)
 
-case class Args(args: Seq[Arg])
+case class Args(pos: SLParser#Position, args: Seq[Arg])
 
 case class ApplyExpr(pos: SLParser#Position, expr: ExprAST, args: Seq[Args]) extends ExprAST
 

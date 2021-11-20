@@ -18,8 +18,8 @@ object Compiler {
         buf += PosInst(pos)
 
       expr match {
-        case IntegerExpr(n) => buf += PushInst(SLNumber(n.toDouble))
-        case DecimalExpr(n) => buf += PushInst(SLNumber(n.toDouble))
+        case IntegerExpr(n) => buf += SLNumber(n.toDouble)
+        case DecimalExpr(n) => buf += SLNumber(n.toDouble)
         case LeftInfixExpr(lpos, left, right) =>
           compileExpr(lpos, left)
           right foreach {
