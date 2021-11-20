@@ -21,6 +21,7 @@ object Main extends App {
   val c = Compiler(t)
   val e = new SimpleEnv(c)
 
+  e.trace = true
   e.run()
 
 }

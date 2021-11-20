@@ -62,5 +62,5 @@ case object CallInst extends Inst {
 }
 
 case object SymInst extends Inst {
-  def execute(env: Env): Unit = env.symbol(env.pops)
+  def execute(env: Env): Unit = env push env.symbol(env.pops)
 }

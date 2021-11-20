@@ -5,6 +5,7 @@ import scala.collection.mutable
 abstract class Env {
 
   var _pos: Option[SLParser#Position] = None
+  var trace: Boolean = false
 
   def run(): Unit
 
@@ -63,6 +64,9 @@ class SimpleEnv(block: CodeBlock) extends Env {
   def run(): Unit =
     while (ip < block.length) {
       val inst = block(ip)
+
+      if (trace)
+        println(f"$ip% 3d $inst")
 
       ip += 1
       inst execute this
