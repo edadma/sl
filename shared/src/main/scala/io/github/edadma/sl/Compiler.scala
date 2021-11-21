@@ -27,7 +27,7 @@ object Compiler {
         len
       }
 
-      def patch(fixup: Int): Unit = buf(fixup) = SLInteger(buf.length - fixup)
+      def patch(fixup: Int): Unit = buf(fixup) = SLInteger(buf.length - fixup - 2)
 
       def loop(start: Int): Unit = {
         buf += SLInteger(-(buf.length - start) - 2)

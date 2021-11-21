@@ -17,7 +17,7 @@ object Main extends App {
 //      |println('done')
 //      |""".stripMargin
     """
-      |if 3 < 4 < 5 then println('yes')
+      |if 3 < 3 < 5 then println('yes')
       |println('done')  
       |""".stripMargin
   val p = new SLParser(input)
@@ -26,9 +26,12 @@ object Main extends App {
 //  pprintln(t)
 
   val c = Compiler(t)
+
+//  println(c)
+
   val e = new SimpleEnv(c)
 
-  e.trace = true
+//  e.trace = true
   e.run()
 
 }

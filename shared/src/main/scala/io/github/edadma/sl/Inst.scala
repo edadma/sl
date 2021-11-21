@@ -100,9 +100,7 @@ case object BranchIfFalseCompareInst extends Inst {
     val disp = env.popi
     val cond = env.popb
 
-    if (cond)
-      env.pop
-    else {
+    if (!cond) {
       env.pop
       env push SLValue.FALSE
       env.branch(disp)

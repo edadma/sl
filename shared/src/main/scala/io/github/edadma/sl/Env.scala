@@ -81,6 +81,9 @@ class SimpleEnv(block: CodeBlock) extends Env {
 
       ip += 1
       inst execute this
+
+      if (trace)
+        println(s"    ${stack mkString ", "}")
     }
 
   def apply(n: Int): SLValue = stack(n)
