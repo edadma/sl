@@ -1,7 +1,5 @@
 package io.github.edadma.sl
 
-case class Activation(caller: Activation, block: CodeBlock) extends SLValue {
-  override def clas: SLClass = null
-
+case class Activation(caller: Activation, block: CodeBlock, vars: Map[String, SLValue]) {
   var ip = 0
 }

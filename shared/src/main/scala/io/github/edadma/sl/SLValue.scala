@@ -2,6 +2,7 @@ package io.github.edadma.sl
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
+import scala.language.postfixOps
 
 trait SLValue extends Inst {
   def clas: SLClass
@@ -58,10 +59,12 @@ trait Callable {
   def call(env: Env, args: Seq[SLValue]): Unit
 }
 
-case class SLFunction(name: String, f: Seq[SLValue] => SLValue) extends SLValue with Callable {
+case class SLFunction(name: String, code: CodeBlock, parms: Seq[String]) extends SLValue with Callable {
   val clas: SLClass = PrimitiveClass.FunctionClass
 
-  def call(env: Env, args: Seq[SLValue]): Unit = env push f(args)
+  def call(env: Env, args: Seq[SLValue]): Unit = {
+    env.act = new Activation(env.act, code, parms zip args toMap)
+  }
 
   override def toString: String = s"[function: $name]"
 }
