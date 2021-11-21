@@ -11,17 +11,19 @@ abstract class Env {
 
   def branch(disp: Int): Unit
 
-  def pos(p: SLParser#Position): Unit = _pos = Some(p)
+  def apply(n: Int): SLValue
 
   def push(v: SLValue): Unit
-
-  def pushn(n: Number): Unit = push(SLNumber(n))
-
-  def pushb(b: Boolean): Unit = push(SLBoolean(b))
 
   def pop: SLValue
 
   def top: SLValue
+
+  def pos(p: SLParser#Position): Unit = _pos = Some(p)
+
+  def pushn(n: Number): Unit = push(SLNumber(n))
+
+  def pushb(b: Boolean): Unit = push(SLBoolean(b))
 
   def popn: Number =
     pop.deref match {
@@ -59,6 +61,7 @@ abstract class Env {
 }
 
 class SimpleEnv(block: CodeBlock) extends Env {
+
   val stack = new mutable.Stack[SLValue]
   val vars: mutable.Map[String, SLValue] =
     mutable.HashMap[String, SLValue](
@@ -80,15 +83,17 @@ class SimpleEnv(block: CodeBlock) extends Env {
       inst execute this
     }
 
-  override def push(v: SLValue): Unit = stack push v
+  def apply(n: Int): SLValue = stack(n)
+
+  def push(v: SLValue): Unit = stack push v
 
   def branch(disp: Int): Unit = ip += disp
 
-  override def pop: SLValue = stack.pop()
+  def pop: SLValue = stack.pop()
 
-  override def top: SLValue = stack.top
+  def top: SLValue = stack.top
 
-  override def symbol(name: String): SLValue =
+  def symbol(name: String): SLValue =
     vars get name match {
       case Some(value) => value
       case None =>
@@ -97,4 +102,5 @@ class SimpleEnv(block: CodeBlock) extends Env {
         vars(name) = mut
         mut
     }
+
 }

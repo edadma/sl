@@ -61,13 +61,52 @@ case object BranchIfFalseInst extends Inst {
   }
 }
 
-case object BranchIfFalseBoolInst extends Inst {
+case object BranchIfTrueInst extends Inst {
   def execute(env: Env): Unit = {
     val disp = env.popi
     val cond = env.popb
 
-    if (!cond)
+    if (cond)
       env.branch(disp)
+  }
+}
+
+case object BranchIfTrueBoolInst extends Inst {
+  def execute(env: Env): Unit = {
+    val disp = env.popi
+    val cond = env.topb
+
+    if (cond)
+      env.branch(disp)
+    else
+      env.pop
+  }
+}
+
+case object BranchIfFalseBoolInst extends Inst {
+  def execute(env: Env): Unit = {
+    val disp = env.popi
+    val cond = env.topb
+
+    if (cond)
+      env.pop
+    else
+      env.branch(disp)
+  }
+}
+
+case object BranchIfFalseCompareInst extends Inst {
+  def execute(env: Env): Unit = {
+    val disp = env.popi
+    val cond = env.popb
+
+    if (cond)
+      env.pop
+    else {
+      env.pop
+      env push SLValue.FALSE
+      env.branch(disp)
+    }
   }
 }
 
@@ -77,6 +116,20 @@ case object BranchInst extends Inst {
 
 case object DupInst extends Inst {
   def execute(env: Env): Unit = env push env.top
+}
+
+case object SwapInst extends Inst {
+  def execute(env: Env): Unit = {
+    val a = env.pop
+    val b = env.pop
+
+    env push a
+    env push b
+  }
+}
+
+case object OverInst extends Inst {
+  def execute(env: Env): Unit = env push env(1)
 }
 
 case object CallableInst extends Inst {

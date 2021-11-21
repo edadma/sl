@@ -11,6 +11,13 @@ trait SLValue extends Inst {
   def execute(env: Env): Unit = env push this
 }
 
+object SLValue {
+
+  val FALSE: SLBoolean = SLBoolean(false)
+  val TRUE: SLBoolean = SLBoolean(true)
+
+}
+
 case class SLInteger(n: Int) extends SLValue {
   val clas: SLClass = PrimitiveClass.NumberClass
 

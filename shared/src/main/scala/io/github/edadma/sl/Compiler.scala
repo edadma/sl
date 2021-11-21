@@ -42,9 +42,18 @@ object Compiler {
           val fixups = new ListBuffer[Int]
 
           compileExpr(lpos, left)
+
           right.zipWithIndex foreach {
             case (RightOper(op, pos, expr), idx) =>
+              val last = idx == right.length - 1
+
               compileExpr(pos, expr)
+
+              if (!last) {
+                buf += SwapInst
+                buf += OverInst
+              }
+
               buf += (op match {
                 case "<="  => LteInst
                 case "<"   => LtInst
@@ -52,8 +61,9 @@ object Compiler {
                 case "div" => DivInst
               })
 
-              if (idx < right.length - 1)
-                fixups += forward(BranchIfFalseInst)
+              if (!last) {
+                fixups += forward(BranchIfFalseCompareInst)
+              }
           }
 
           fixups foreach patch
