@@ -150,3 +150,9 @@ case object CallInst extends Inst {
 case object SymInst extends Inst {
   def execute(env: Env): Unit = env push env.symbol(env.pops)
 }
+
+case object RetInst extends Inst {
+  def execute(env: Env): Unit = {
+    env.act = env.act.caller
+  }
+}

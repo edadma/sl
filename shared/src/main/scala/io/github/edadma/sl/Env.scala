@@ -8,18 +8,16 @@ abstract class Env {
   var trace: Boolean = false
 
   val stack = new mutable.Stack[SLValue]
-  var ip = 0
-
-  def block: CodeBlock
+  var act: Activation
 
   def run(): Unit =
-    while (ip < block.length) {
-      val inst = block(ip)
+    while (act.ip < act.block.length) {
+      val inst = act.block(act.ip)
 
       if (trace)
-        println(f"$ip% 3d $inst")
+        println(f"${act.ip}% 3d $inst")
 
-      ip += 1
+      act.ip += 1
       inst execute this
 
       if (trace)
@@ -30,7 +28,7 @@ abstract class Env {
 
   def push(v: SLValue): Unit = stack push v
 
-  def branch(disp: Int): Unit = ip += disp
+  def branch(disp: Int): Unit = act.ip += disp
 
   def pop: SLValue = stack.pop()
 
@@ -77,8 +75,9 @@ abstract class Env {
 
 }
 
-class SimpleEnv(val block: CodeBlock) extends Env {
+class SimpleEnv(block: CodeBlock) extends Env {
 
+  var act: Activation = Activation(null, block)
   val vars: mutable.Map[String, SLValue] =
     mutable.HashMap[String, SLValue](
       "println" -> SLBuiltin("println", args => {
