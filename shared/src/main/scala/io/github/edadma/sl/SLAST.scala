@@ -32,6 +32,8 @@ case class BooleanExpr(b: String) extends ExprAST
 
 case object NullExpr extends ExprAST
 
+case object VoidExpr extends ExprAST
+
 case class SymExpr(ident: Ident) extends ExprAST
 
 case class MapEntry(key: Ident, pos: SLParser#Position, value: ExprAST)

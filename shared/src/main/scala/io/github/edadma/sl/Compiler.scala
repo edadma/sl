@@ -38,6 +38,7 @@ object Compiler {
         buf += PosInst(pos)
 
       expr match {
+        case VoidExpr => buf += SLVoid
         case CompareExpr(lpos, left, right) =>
           val fixups = new ListBuffer[Int]
 
@@ -114,8 +115,10 @@ object Compiler {
           val exit = forward(BranchIfFalseInst)
 
           compileExpr(null, body)
+          buf += DropInst
           loop(start)
           patch(exit)
+          buf += SLVoid
         case ConditionalExpr(pos, cond, yes, no) =>
           compileExpr(pos, cond)
 
@@ -123,7 +126,7 @@ object Compiler {
 
           compileExpr(null, yes)
 
-          val jumpyes = if (no.isDefined) forward(BranchInst) else 0
+          val jumpyes = forward(BranchInst) // if (no.isDefined) forward(BranchInst) else 0
 
           patch(jumpno)
 
@@ -131,13 +134,30 @@ object Compiler {
             compileExpr(null, e)
             patch(jumpyes)
           }
+
+          if (no.isEmpty) {
+            buf += SLVoid
+            patch(jumpyes)
+          }
       }
     }
 
-    stats foreach {
-      case DefStat(ident, params, body) =>
-      case VarStat(ident, init)         =>
-      case ExpressionStat(expr)         => compileExpr(null, expr)
+    def compileStat(stat: StatAST): Unit =
+      stat match {
+        case DefStat(ident, params, body) =>
+        case VarStat(ident, init)         =>
+        case ExpressionStat(expr)         => compileExpr(null, expr)
+      }
+
+    if (stats.nonEmpty) {
+      stats.init foreach { s =>
+        compileStat(s)
+
+        if (s.isInstanceOf[ExpressionStat])
+          buf += DropInst
+      }
+
+      compileStat(stats.last)
     }
 
     buf

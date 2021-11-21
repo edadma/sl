@@ -48,6 +48,7 @@ case object AssignInst extends Inst {
     val mutable = env.pop.asInstanceOf[Mutable]
 
     mutable.value = newValue
+    env push newValue
   }
 }
 
@@ -128,6 +129,10 @@ case object SwapInst extends Inst {
 
 case object OverInst extends Inst {
   def execute(env: Env): Unit = env push env(1)
+}
+
+case object DropInst extends Inst {
+  def execute(env: Env): Unit = env.pop
 }
 
 case object CallableInst extends Inst {
