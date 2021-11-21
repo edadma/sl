@@ -59,11 +59,19 @@ trait Callable {
 }
 
 case class SLFunction(name: String, f: Seq[SLValue] => SLValue) extends SLValue with Callable {
-  val clas: SLClass = PrimitiveClass.StringClass
+  val clas: SLClass = PrimitiveClass.FunctionClass
 
   def call(env: Env, args: Seq[SLValue]): Unit = env push f(args)
 
   override def toString: String = s"[function: $name]"
+}
+
+case class SLBuiltin(name: String, f: Seq[SLValue] => SLValue) extends SLValue with Callable {
+  val clas: SLClass = PrimitiveClass.BuiltinClass
+
+  def call(env: Env, args: Seq[SLValue]): Unit = env push f(args)
+
+  override def toString: String = s"[built-in function: $name]"
 }
 
 abstract class Mutable extends SLValue {

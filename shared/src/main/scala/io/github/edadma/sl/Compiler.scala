@@ -92,9 +92,7 @@ object Compiler {
         case ApplyExpr(fpos, expr, calls) =>
           def generateCall(as: Args): Unit = {
             buf += CallableInst
-            as.args foreach {
-              case Arg(pos, expr) => compileExpr(pos, expr)
-            }
+            as.args foreach { case Arg(pos, expr) => compileExpr(pos, expr) }
             buf += SLInteger(as.args.length)
             // todo: as.pos wasn't pushed
             buf += CallInst

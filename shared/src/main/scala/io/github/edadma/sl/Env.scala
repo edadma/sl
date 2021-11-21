@@ -7,17 +7,34 @@ abstract class Env {
   var _pos: Option[SLParser#Position] = None
   var trace: Boolean = false
 
-  def run(): Unit
+  val stack = new mutable.Stack[SLValue]
+  var ip = 0
 
-  def branch(disp: Int): Unit
+  def block: CodeBlock
 
-  def apply(n: Int): SLValue
+  def run(): Unit =
+    while (ip < block.length) {
+      val inst = block(ip)
 
-  def push(v: SLValue): Unit
+      if (trace)
+        println(f"$ip% 3d $inst")
 
-  def pop: SLValue
+      ip += 1
+      inst execute this
 
-  def top: SLValue
+      if (trace)
+        println(s"    ${stack mkString ", "}")
+    }
+
+  def apply(n: Int): SLValue = stack(n)
+
+  def push(v: SLValue): Unit = stack push v
+
+  def branch(disp: Int): Unit = ip += disp
+
+  def pop: SLValue = stack.pop()
+
+  def top: SLValue = stack.top
 
   def pos(p: SLParser#Position): Unit = _pos = Some(p)
 
@@ -60,41 +77,15 @@ abstract class Env {
 
 }
 
-class SimpleEnv(block: CodeBlock) extends Env {
+class SimpleEnv(val block: CodeBlock) extends Env {
 
-  val stack = new mutable.Stack[SLValue]
   val vars: mutable.Map[String, SLValue] =
     mutable.HashMap[String, SLValue](
-      "println" -> SLFunction("println", args => {
+      "println" -> SLBuiltin("println", args => {
         println(args mkString ", ")
         SLVoid
       })
     )
-  var ip = 0
-
-  def run(): Unit =
-    while (ip < block.length) {
-      val inst = block(ip)
-
-      if (trace)
-        println(f"$ip% 3d $inst")
-
-      ip += 1
-      inst execute this
-
-      if (trace)
-        println(s"    ${stack mkString ", "}")
-    }
-
-  def apply(n: Int): SLValue = stack(n)
-
-  def push(v: SLValue): Unit = stack push v
-
-  def branch(disp: Int): Unit = ip += disp
-
-  def pop: SLValue = stack.pop()
-
-  def top: SLValue = stack.top
 
   def symbol(name: String): SLValue =
     vars get name match {
