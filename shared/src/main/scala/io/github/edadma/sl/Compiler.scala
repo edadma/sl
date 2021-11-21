@@ -33,6 +33,7 @@ object Compiler {
         case SymExpr(ident)   => buf ++= Seq(PosInst(ident.pos), SLString(ident.name), SymInst)
         case IntegerExpr(n)   => buf += SLNumber(n.toDouble)
         case DecimalExpr(n)   => buf += SLNumber(n.toDouble)
+        case StringExpr(s)    => buf += SLString(s)
         case LeftInfixExpr(lpos, left, right) =>
           compileExpr(lpos, left)
           right foreach {

@@ -45,10 +45,10 @@ case object AssignInst extends Inst {
 
 case object BranchIfFalseInst extends Inst {
   def execute(env: Env): Unit = {
-    val cond = env.popb
     val disp = env.popi
+    val cond = env.popb
 
-    if (cond)
+    if (!cond)
       env.branch(disp)
   }
 }

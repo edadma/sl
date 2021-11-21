@@ -12,6 +12,8 @@ object Main extends App {
       | println(x)
       | x = x + 1
       |}
+      |
+      |println('done')
       |""".stripMargin
 //    """
 //      |println(123)
@@ -19,12 +21,12 @@ object Main extends App {
   val p = new SLParser(input)
   val t = p.parseSources
 
-  pprintln(t)
+//  pprintln(t)
 
   val c = Compiler(t)
   val e = new SimpleEnv(c)
 
-  e.trace = true
+//  e.trace = true
   e.run()
 
 }
