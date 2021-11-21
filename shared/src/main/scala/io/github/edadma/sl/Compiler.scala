@@ -15,10 +15,11 @@ object Compiler {
                    buf: ArrayBuffer[Inst] = new ArrayBuffer,
                    fixups: mutable.Stack[Int] = new mutable.Stack): ArrayBuffer[Inst] = {
     def compileExpr(pos: SLParser#Position, expr: ExprAST): Unit = {
-      def forward: Int = {
+      def forward(br: Inst): Int = {
         val len = buf.length
 
         buf += null
+        buf += br
         len
       }
 
@@ -39,8 +40,10 @@ object Compiler {
             case RightOper(op, pos, expr) =>
               compileExpr(pos, expr)
               buf += (op match {
-                case "<=" => LteInst
-                case "<"  => LtInst
+                case "<="  => LteInst
+                case "<"   => LtInst
+                case "=="  => EqInst
+                case "div" => DivInst
               })
           }
         case BlockExpr(stats) => compileBlock(stats, buf, fixups)
@@ -87,21 +90,19 @@ object Compiler {
 
           compileExpr(pos, cond)
 
-          val exit = forward
+          val exit = forward(BranchIfFalseInst)
 
-          buf += BranchIfFalseInst
           compileExpr(null, body)
           loop(start)
           patch(exit)
         case ConditionalExpr(pos, cond, yes, no) =>
           compileExpr(pos, cond)
 
-          val jumpno = forward
+          val jumpno = forward(BranchIfFalseInst)
 
-          buf += BranchIfFalseInst
           compileExpr(null, yes)
 
-          val jumpyes = forward
+          val jumpyes = if (no.isDefined) forward(BranchInst) else 0
 
           patch(jumpno)
 

@@ -29,9 +29,9 @@ class SLParser(val input: ParserInput) extends Parser {
   def nl: Rule0 = rule(zeroOrMore(anyOf("\r\n")) ~ sp)
 
   def kw(s: String): Rule1[String] =
-    rule(quiet(capture(str(s) ~ !CharPredicate.AlphaNum ~ sp) ~> ((s: String) => s.trim)))
+    rule(capture(str(s) ~ !CharPredicate.AlphaNum ~ sp) ~> ((s: String) => s.trim))
 
-  def sym(s: String): Rule1[String] = rule(quiet(capture(s) ~> ((s: String) => s.trim)))
+  def sym(s: String): Rule1[String] = rule(capture(s) ~> ((s: String) => s.trim))
 
   def sources: Rule1[SourcesAST] = rule(nl ~ statements ~ EOI ~> SourcesAST)
 

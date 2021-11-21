@@ -28,6 +28,14 @@ case object LtInst extends Inst {
   def execute(env: Env): Unit = env pushb (env.popn.doubleValue > env.popn.doubleValue)
 }
 
+case object EqInst extends Inst {
+  def execute(env: Env): Unit = env pushb (env.popn.doubleValue == env.popn.doubleValue)
+}
+
+case object DivInst extends Inst {
+  def execute(env: Env): Unit = env pushb (env.popn.doubleValue % env.popn.doubleValue == 0)
+}
+
 case object MutableInst extends Inst {
   def execute(env: Env): Unit =
     if (!env.top.isInstanceOf[Mutable])
