@@ -15,6 +15,20 @@ object Compiler {
                    buf: ArrayBuffer[Inst] = new ArrayBuffer,
                    fixups: mutable.Stack[Int] = new mutable.Stack): ArrayBuffer[Inst] = {
     def compileExpr(pos: SLParser#Position, expr: ExprAST): Unit = {
+      def forward: Int = {
+        val len = buf.length
+
+        buf += null
+        len
+      }
+
+      def patch(fixup: Int): Unit = buf(fixup) = SLInteger(buf.length - fixup)
+
+      def loop(start: Int): Unit = {
+        buf += SLInteger(-(buf.length - start) - 2)
+        buf += BranchInst
+      }
+
       if (pos ne null)
         buf += PosInst(pos)
 
@@ -69,33 +83,32 @@ object Compiler {
             generateCall(a)
           }
         case WhileExpr(pos, cond, body, no) =>
-          def forward(): Unit = {
-            fixups push buf.length
-            buf += null
+          val start = buf.length
+
+          compileExpr(pos, cond)
+
+          val exit = forward
+
+          buf += BranchIfFalseInst
+          compileExpr(null, body)
+          loop(start)
+          patch(exit)
+        case ConditionalExpr(pos, cond, yes, no) =>
+          compileExpr(pos, cond)
+
+          val jumpno = forward
+
+          buf += BranchIfFalseInst
+          compileExpr(null, yes)
+
+          val jumpyes = forward
+
+          patch(jumpno)
+
+          no foreach { e =>
+            compileExpr(null, e)
+            patch(jumpyes)
           }
-
-          def patch(): Unit = {
-            val fixup = fixups.pop()
-
-            buf(fixup) = SLInteger(buf.length - fixup)
-          }
-
-          def loop(body: => Unit): Unit = {
-            val len = buf.length
-
-            body
-            buf += SLInteger(-(buf.length - len) - 2)
-            buf += BranchInst
-          }
-
-          loop {
-            compileExpr(pos, cond)
-            forward()
-            buf += BranchIfFalseInst
-            compileExpr(null, body)
-          }
-
-          patch()
       }
     }
 
