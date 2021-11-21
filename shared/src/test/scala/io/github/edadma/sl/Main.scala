@@ -9,6 +9,7 @@ object Main extends App {
       |x = 1
       |
       |while x <= 5 do {
+      | //if 2 < x < 5 then println('3 or 4')
       | println(x)
       | x = x + 1
       |}

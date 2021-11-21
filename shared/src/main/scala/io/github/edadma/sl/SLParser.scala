@@ -24,9 +24,9 @@ class SLParser(val input: ParserInput) extends Parser {
 
   def pos: Rule1[Position] = rule(push(new Position(cursor)))
 
-  def sp: Rule0 = rule(quiet(zeroOrMore(anyOf(" \t"))))
+  def sp: Rule0 = rule(quiet(zeroOrMore(anyOf(" \t") | '/' ~ '/' ~ zeroOrMore(noneOf("\n\r")))))
 
-  def nl: Rule0 = rule(zeroOrMore(anyOf("\r\n")) ~ sp)
+  def nl: Rule0 = rule(zeroOrMore(anyOf("\r\n") ~ sp) ~ sp)
 
   def kw(s: String): Rule1[String] =
     rule(capture(str(s) ~ !CharPredicate.AlphaNum ~ sp) ~> ((s: String) => s.trim))

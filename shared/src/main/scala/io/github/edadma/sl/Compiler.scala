@@ -1,7 +1,7 @@
 package io.github.edadma.sl
 
 import scala.collection.mutable
-import scala.collection.mutable.ArrayBuffer
+import scala.collection.mutable.{ArrayBuffer, ListBuffer}
 
 object Compiler {
 
@@ -35,9 +35,11 @@ object Compiler {
 
       expr match {
         case CompareExpr(lpos, left, right) =>
+          val fixups = new ListBuffer[Int]
+
           compileExpr(lpos, left)
-          right foreach {
-            case RightOper(op, pos, expr) =>
+          right.zipWithIndex foreach {
+            case (RightOper(op, pos, expr), idx) =>
               compileExpr(pos, expr)
               buf += (op match {
                 case "<="  => LteInst
@@ -45,7 +47,12 @@ object Compiler {
                 case "=="  => EqInst
                 case "div" => DivInst
               })
+
+              if (idx < right.length - 1)
+                fixups += forward(BranchIfFalseInst)
           }
+
+          fixups foreach patch
         case BlockExpr(stats) => compileBlock(stats, buf, fixups)
         case SymExpr(ident)   => buf ++= Seq(PosInst(ident.pos), SLString(ident.name), SymInst)
         case IntegerExpr(n)   => buf += SLNumber(n.toDouble)
