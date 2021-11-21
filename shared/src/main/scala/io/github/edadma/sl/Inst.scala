@@ -61,12 +61,26 @@ case object BranchIfFalseInst extends Inst {
   }
 }
 
+case object BranchIfFalseBoolInst extends Inst {
+  def execute(env: Env): Unit = {
+    val disp = env.popi
+    val cond = env.popb
+
+    if (!cond)
+      env.branch(disp)
+  }
+}
+
 case object BranchInst extends Inst {
   def execute(env: Env): Unit = env.branch(env.popi)
 }
 
+case object DupInst extends Inst {
+  def execute(env: Env): Unit = env push env.top
+}
+
 case object CallableInst extends Inst {
-  def execute(env: Env): Unit = if (!env.top.isInstanceOf[Callable]) env.problem(s"not callable: ${env.top}")
+  def execute(env: Env): Unit = if (!env.top.deref.isInstanceOf[Callable]) env.problem(s"not callable: ${env.top}")
 }
 
 case object CallInst extends Inst {

@@ -11,10 +11,14 @@ object Compiler {
     declrs.asInstanceOf[Seq[DeclarationAST]]
   }
 
+  trait BooleanCompilation
+  case object BranchFalse extends BooleanCompilation
+  case object BranchTrue extends BooleanCompilation
+
   def compileBlock(stats: Seq[StatAST],
                    buf: ArrayBuffer[Inst] = new ArrayBuffer,
                    fixups: mutable.Stack[Int] = new mutable.Stack): ArrayBuffer[Inst] = {
-    def compileExpr(pos: SLParser#Position, expr: ExprAST): Unit = {
+    def compileExpr(pos: SLParser#Position, expr: ExprAST, bool: BooleanCompilation = null): Unit = {
       def forward(br: Inst): Int = {
         val len = buf.length
 

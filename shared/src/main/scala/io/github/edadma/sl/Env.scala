@@ -35,6 +35,12 @@ abstract class Env {
       case x            => problem(s"boolean was expected, not '$x'")
     }
 
+  def topb: Boolean =
+    top.deref match {
+      case SLBoolean(b) => b
+      case x            => problem(s"boolean was expected, not '$x'")
+    }
+
   def popi: Int =
     pop.deref match {
       case SLInteger(n) => n
