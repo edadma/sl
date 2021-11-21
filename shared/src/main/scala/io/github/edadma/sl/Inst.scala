@@ -36,7 +36,7 @@ case object MutableInst extends Inst {
 
 case object AssignInst extends Inst {
   def execute(env: Env): Unit = {
-    val newValue = env.pop
+    val newValue = env.pop.deref
     val mutable = env.pop.asInstanceOf[Mutable]
 
     mutable.value = newValue
@@ -63,9 +63,9 @@ case object CallableInst extends Inst {
 
 case object CallInst extends Inst {
   def execute(env: Env): Unit = {
-    val args = Seq.fill(env.popi.intValue)(env.pop)
+    val args = Seq.fill(env.popi.intValue)(env.pop.deref)
 
-    env.pop.asInstanceOf[Callable].call(env, args)
+    env.pop.deref.asInstanceOf[Callable].call(env, args)
   }
 }
 

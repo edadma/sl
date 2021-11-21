@@ -24,24 +24,24 @@ abstract class Env {
   def top: SLValue
 
   def popn: Number =
-    pop match {
+    pop.deref match {
       case SLNumber(n) => n
       case x           => problem(s"number was expected, not '$x'")
     }
 
   def popb: Boolean =
-    pop match {
+    pop.deref match {
       case SLBoolean(b) => b
       case x            => problem(s"boolean was expected, not '$x'")
     }
 
   def popi: Int =
-    pop match {
+    pop.deref match {
       case SLInteger(n) => n
       case x            => problem(s"integer was expected, not '$x'")
     }
 
-  def pops: String = pop.toString
+  def pops: String = pop.deref.toString
 
   def symbol(name: String): SLValue
 
