@@ -52,6 +52,15 @@ case object AssignInst extends Inst {
   }
 }
 
+case object ConstInst extends Inst {
+  def execute(env: Env): Unit = {
+    val value = env.pop.deref
+    val name = env.pops
+
+    env.act.locals(name) = value
+  }
+}
+
 case object BranchIfFalseInst extends Inst {
   def execute(env: Env): Unit = {
     val disp = env.popi

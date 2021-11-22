@@ -158,16 +158,15 @@ object Compiler {
 
   def compileStat(stat: StatAST): Unit =
     stat match {
-      case DefStat(ident, params, pos, body) =>
-        new Code(newBuffer {
-          compileExpr(pos, body)
-        })
+      case DefStat(ident, parms, pos, body) =>
+        SLString(ident.name)
+        SLFunction(ident.name, new Code(newBuffer(compileExpr(pos, body))), parms map (_.name))
+        buf += ConstInst
       case VarStat(ident, init) =>
       case ExpressionStat(expr) => compileExpr(null, expr)
     }
 
   def compileBlock(stats: Seq[StatAST]): ArrayBuffer[Inst] = {
-
     if (stats.nonEmpty) {
       stats.init foreach { s =>
         compileStat(s)
