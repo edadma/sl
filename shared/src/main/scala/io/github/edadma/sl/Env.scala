@@ -86,14 +86,19 @@ class SimpleEnv(block: CodeBlock) extends Env {
       })
     )
 
-  def symbol(name: String): SLValue =
-    vars get name match {
+  def symbol(name: String): SLValue = {
+    act.vars get name match {
       case Some(value) => value
       case None =>
-        val mut = new VarMutable(SLNull)
+        vars get name match {
+          case Some(value) => value
+          case None =>
+            val mut = new VarMutable(SLNull)
 
-        vars(name) = mut
-        mut
+            vars(name) = mut
+            mut
+        }
     }
+  }
 
 }
