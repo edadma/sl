@@ -20,6 +20,18 @@ case object SubInst extends Inst {
   }
 }
 
+case object MulInst extends Inst {
+  def execute(env: Env): Unit = env pushn (env.popn.doubleValue * env.popn.doubleValue)
+}
+
+case object DivInst extends Inst {
+  def execute(env: Env): Unit = {
+    val divisor = env.popn.doubleValue
+
+    env pushn (env.popn.doubleValue / divisor)
+  }
+}
+
 case object LteInst extends Inst {
   def execute(env: Env): Unit = env pushb (env.popn.doubleValue >= env.popn.doubleValue)
 }
@@ -32,8 +44,12 @@ case object EqInst extends Inst {
   def execute(env: Env): Unit = env pushb (env.popn.doubleValue == env.popn.doubleValue)
 }
 
-case object DivInst extends Inst {
-  def execute(env: Env): Unit = env pushb (env.popn.doubleValue % env.popn.doubleValue == 0)
+case object ModInst extends Inst {
+  def execute(env: Env): Unit = {
+    val divisor = env.popn.doubleValue
+
+    env pushn (env.popn.doubleValue % divisor)
+  }
 }
 
 case object MutableInst extends Inst {

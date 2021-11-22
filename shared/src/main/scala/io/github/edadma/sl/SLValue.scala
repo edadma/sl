@@ -16,6 +16,7 @@ object SLValue {
 
   val FALSE: SLBoolean = SLBoolean(false)
   val TRUE: SLBoolean = SLBoolean(true)
+  val ZERO: SLNumber = SLNumber(0)
 
 }
 

@@ -69,12 +69,12 @@ object Compiler {
               buf += OverInst
             }
 
-            buf += (op match {
-              case "<="  => LteInst
-              case "<"   => LtInst
-              case "=="  => EqInst
-              case "div" => DivInst
-            })
+            op match {
+              case "<="  => buf += LteInst
+              case "<"   => buf += LtInst
+              case "=="  => buf += EqInst
+              case "div" => buf ++= Seq(SwapInst, ModInst, SLValue.ZERO, EqInst)
+            }
 
             if (!last) {
               fixups += forward(BranchIfFalseCompareInst)
@@ -94,8 +94,11 @@ object Compiler {
             compileExpr(pos, expr)
             buf +=
               (op match {
-                case "+" => AddInst
-                case "-" => SubInst
+                case "+"   => AddInst
+                case "-"   => SubInst
+                case "*"   => MulInst
+                case "/"   => DivInst
+                case "mod" => ModInst
               })
         }
       case AssignmentExpr(lpos, lvalue, rpos, expr) =>
