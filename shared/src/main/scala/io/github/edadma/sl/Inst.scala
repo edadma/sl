@@ -4,7 +4,7 @@ trait Inst {
   def execute(env: Env): Unit
 }
 
-case class PosInst(p: SLParser#Position) extends Inst {
+case class PosInst(p: Cursor) extends Inst {
   def execute(env: Env): Unit = env pos p
 }
 
@@ -149,6 +149,10 @@ case object CallInst extends Inst {
 
 case object SymInst extends Inst {
   def execute(env: Env): Unit = env push env.symbol(env.pops)
+}
+
+case object LvalueInst extends Inst {
+  def execute(env: Env): Unit = env push env.lvalue(env.pops)
 }
 
 case object RetInst extends Inst {

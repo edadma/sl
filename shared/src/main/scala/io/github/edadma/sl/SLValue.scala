@@ -59,10 +59,13 @@ trait Callable {
   def call(env: Env, args: Seq[SLValue]): Unit
 }
 
-case class SLFunction(name: String, code: CodeBlock, parms: Seq[String]) extends SLValue with Callable {
+case class SLFunction(name: String, code: Code, parms: Seq[String]) extends SLValue with Callable {
   val clas: SLClass = PrimitiveClass.FunctionClass
 
   def call(env: Env, args: Seq[SLValue]): Unit = {
+    if (args.length != parms.length)
+      env.problem(s"wrong number of arguments for '$name()': got ${args.length}, expected ${parms.length}")
+
     env.act = new Activation(env.act, code, parms zip args toMap)
   }
 

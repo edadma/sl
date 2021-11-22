@@ -7,10 +7,6 @@ import scala.language.implicitConversions
 
 class SLParser(val input: ParserInput) extends Parser {
 
-  class Position(val offset: Int) {
-    override def toString: String = offset.toString
-  }
-
   private val delimiters = "[](){}`'\","
   private val delimiter = CharPredicate(delimiters)
 
@@ -22,7 +18,7 @@ class SLParser(val input: ParserInput) extends Parser {
     else
       rule(str(s) ~ !CharPredicate.AlphaNum ~ sp)
 
-  def pos: Rule1[Position] = rule(push(new Position(cursor)))
+  def pos: Rule1[Cursor] = rule(push(new Cursor(cursor)))
 
   def sp: Rule0 = rule(quiet(zeroOrMore(anyOf(" \t") | '/' ~ '/' ~ zeroOrMore(noneOf("\n\r")))))
 

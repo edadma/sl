@@ -2,7 +2,7 @@ package io.github.edadma.sl
 
 trait SLAST
 
-case class Ident(pos: SLParser#Position, name: String)
+case class Ident(pos: Cursor, name: String)
 
 case class SourcesAST(stats: Seq[StatAST]) extends SLAST
 
@@ -36,38 +36,36 @@ case object VoidExpr extends ExprAST
 
 case class SymExpr(ident: Ident) extends ExprAST
 
-case class MapEntry(key: Ident, pos: SLParser#Position, value: ExprAST)
+case class MapEntry(key: Ident, pos: Cursor, value: ExprAST)
 
 case class MapExpr(pairs: Seq[MapEntry]) extends ExprAST
 
 case class SeqExpr(elems: Seq[ExprAST]) extends ExprAST
 
-case class PrefixExpr(op: String, pos: SLParser#Position, expr: ExprAST) extends ExprAST
+case class PrefixExpr(op: String, pos: Cursor, expr: ExprAST) extends ExprAST
 
-case class RightOper(op: String, pos: SLParser#Position, expr: ExprAST)
+case class RightOper(op: String, pos: Cursor, expr: ExprAST)
 
-case class LeftInfixExpr(lpos: SLParser#Position, left: ExprAST, right: Seq[RightOper]) extends ExprAST
+case class LeftInfixExpr(lpos: Cursor, left: ExprAST, right: Seq[RightOper]) extends ExprAST
 
-case class RightInfixExpr(lpos: SLParser#Position, left: ExprAST, op: String, rpos: SLParser#Position, right: ExprAST)
-    extends ExprAST
+case class RightInfixExpr(lpos: Cursor, left: ExprAST, op: String, rpos: Cursor, right: ExprAST) extends ExprAST
 
-case class Arg(pos: SLParser#Position, expr: ExprAST)
+case class Arg(pos: Cursor, expr: ExprAST)
 
-case class Args(pos: SLParser#Position, args: Seq[Arg])
+case class Args(pos: Cursor, args: Seq[Arg])
 
-case class ApplyExpr(pos: SLParser#Position, expr: ExprAST, calls: Seq[Args]) extends ExprAST
+case class ApplyExpr(pos: Cursor, expr: ExprAST, calls: Seq[Args]) extends ExprAST
 
-case class ConditionalExpr(pos: SLParser#Position, cond: ExprAST, yes: ExprAST, no: Option[ExprAST]) extends ExprAST
+case class ConditionalExpr(pos: Cursor, cond: ExprAST, yes: ExprAST, no: Option[ExprAST]) extends ExprAST
 
-case class WhileExpr(pos: SLParser#Position, cond: ExprAST, body: ExprAST, no: Option[ExprAST]) extends ExprAST
+case class WhileExpr(pos: Cursor, cond: ExprAST, body: ExprAST, no: Option[ExprAST]) extends ExprAST
 
 case class OrExpr(left: ExprAST, right: ExprAST) extends ExprAST
 
 case class AndExpr(left: ExprAST, right: ExprAST) extends ExprAST
 
-case class CompareExpr(lpos: SLParser#Position, left: ExprAST, right: Seq[RightOper]) extends ExprAST
+case class CompareExpr(lpos: Cursor, left: ExprAST, right: Seq[RightOper]) extends ExprAST
 
-case class AssignmentExpr(lpos: SLParser#Position, lvalue: ExprAST, rpos: SLParser#Position, expr: ExprAST)
-    extends ExprAST
+case class AssignmentExpr(lpos: Cursor, lvalue: ExprAST, rpos: Cursor, expr: ExprAST) extends ExprAST
 
 case class ReturnStat(expr: Option[ExprAST]) extends StatAST

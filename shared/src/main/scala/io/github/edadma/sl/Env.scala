@@ -4,11 +4,15 @@ import scala.collection.mutable
 
 abstract class Env {
 
-  var _pos: Option[SLParser#Position] = None
+  var _pos: Option[Cursor] = None
   var trace: Boolean = false
 
   val stack = new mutable.Stack[SLValue]
   var act: Activation
+
+  def symbol(name: String): SLValue
+
+  def lvalue(name: String): SLValue
 
   def run(): Unit =
     while (act.ip < act.block.length) {
@@ -34,7 +38,7 @@ abstract class Env {
 
   def top: SLValue = stack.top
 
-  def pos(p: SLParser#Position): Unit = _pos = Some(p)
+  def pos(p: Cursor): Unit = _pos = Some(p)
 
   def pushn(n: Number): Unit = push(SLNumber(n))
 
@@ -66,8 +70,6 @@ abstract class Env {
 
   def pops: String = pop.deref.toString
 
-  def symbol(name: String): SLValue
-
   def problem(msg: String): Nothing = {
     // todo: use _pos
     sys.error(msg)
@@ -75,7 +77,7 @@ abstract class Env {
 
 }
 
-class SimpleEnv(block: CodeBlock) extends Env {
+class SimpleEnv(block: Code) extends Env {
 
   var act: Activation = new Activation(null, block, Map())
   val vars: mutable.Map[String, SLValue] =
@@ -86,19 +88,36 @@ class SimpleEnv(block: CodeBlock) extends Env {
       })
     )
 
-  def symbol(name: String): SLValue = {
-    act.vars get name match {
+  def symbol(name: String): SLValue =
+    act.args get name match {
       case Some(value) => value
       case None =>
-        vars get name match {
+        act.locals get name match {
           case Some(value) => value
           case None =>
-            val mut = new VarMutable(SLNull)
-
-            vars(name) = mut
-            mut
+            vars get name match {
+              case Some(value) => value
+              case None        => problem(s"symbol not found: $name")
+            }
         }
     }
-  }
+
+  def lvalue(name: String): SLValue =
+    act.args get name match {
+      case Some(value) => value
+      case None =>
+        act.locals get name match {
+          case Some(value) => value
+          case None =>
+            vars get name match {
+              case Some(value) => value
+              case None =>
+                val mut = new VarMutable(SLNull)
+
+                act.locals(name) = mut
+                mut
+            }
+        }
+    }
 
 }

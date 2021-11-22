@@ -1,5 +1,8 @@
 package io.github.edadma.sl
 
-case class Activation(caller: Activation, block: CodeBlock, vars: Map[String, SLValue]) {
+import scala.collection.mutable
+
+case class Activation(caller: Activation, block: Code, args: Map[String, SLValue]) {
+  val locals = new mutable.HashMap[String, SLValue]
   var ip = 0
 }

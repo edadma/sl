@@ -18,7 +18,7 @@ object Compiler {
   def compileBlock(stats: Seq[StatAST],
                    buf: ArrayBuffer[Inst] = new ArrayBuffer,
                    fixups: mutable.Stack[Int] = new mutable.Stack): ArrayBuffer[Inst] = {
-    def compileExpr(pos: SLParser#Position, expr: ExprAST, bool: BooleanCompilation = null): Unit = {
+    def compileExpr(pos: Cursor, expr: ExprAST, bool: BooleanCompilation = null, lvalue: Boolean = false): Unit = {
       def forward(br: Inst): Int = {
         val len = buf.length
 
@@ -69,10 +69,11 @@ object Compiler {
 
           fixups foreach patch
         case BlockExpr(stats) => compileBlock(stats, buf, fixups)
-        case SymExpr(ident)   => buf ++= Seq(PosInst(ident.pos), SLString(ident.name), SymInst)
-        case IntegerExpr(n)   => buf += SLNumber(n.toDouble)
-        case DecimalExpr(n)   => buf += SLNumber(n.toDouble)
-        case StringExpr(s)    => buf += SLString(s)
+        case SymExpr(ident) =>
+          buf ++= Seq(PosInst(ident.pos), SLString(ident.name), if (lvalue) LvalueInst else SymInst)
+        case IntegerExpr(n) => buf += SLNumber(n.toDouble)
+        case DecimalExpr(n) => buf += SLNumber(n.toDouble)
+        case StringExpr(s)  => buf += SLString(s)
         case LeftInfixExpr(lpos, left, right) =>
           compileExpr(lpos, left)
           right foreach {
@@ -85,7 +86,7 @@ object Compiler {
                 })
           }
         case AssignmentExpr(lpos, lvalue, rpos, expr) =>
-          compileExpr(lpos, lvalue)
+          compileExpr(lpos, lvalue, lvalue = true)
           buf += MutableInst
           compileExpr(rpos, expr)
           buf += AssignInst
@@ -161,9 +162,9 @@ object Compiler {
     buf
   }
 
-  def apply(ast: SLAST): CodeBlock =
+  def apply(ast: SLAST): Code =
     ast match {
-      case SourcesAST(stats) => new CodeBlock(compileBlock(stats))
+      case SourcesAST(stats) => new Code(compileBlock(stats))
 //      case BlockExpr(stats)  => new CodeBlock(compileBlock(stats))
     }
 
