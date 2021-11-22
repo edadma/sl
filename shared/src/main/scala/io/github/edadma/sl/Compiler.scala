@@ -159,8 +159,11 @@ object Compiler {
   def compileStat(stat: StatAST): Unit =
     stat match {
       case DefStat(ident, parms, pos, body) =>
-        SLString(ident.name)
-        SLFunction(ident.name, new Code(newBuffer(compileExpr(pos, body))), parms map (_.name))
+        buf += SLString(ident.name)
+        buf += SLFunction(ident.name, new Code(newBuffer {
+          compileExpr(pos, body)
+          buf += RetInst
+        }), parms map (_.name))
         buf += ConstInst
       case VarStat(ident, init) =>
       case ExpressionStat(expr) => compileExpr(null, expr)

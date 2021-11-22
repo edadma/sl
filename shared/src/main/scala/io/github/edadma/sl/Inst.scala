@@ -150,7 +150,7 @@ case object CallableInst extends Inst {
 
 case object CallInst extends Inst {
   def execute(env: Env): Unit = {
-    val args = Seq.fill(env.popi.intValue)(env.pop.deref)
+    val args = Seq.fill(env.popi.intValue)(env.pop.deref).reverse // todo: not efficient
 
     env.pop.deref.asInstanceOf[Callable].call(env, args)
   }

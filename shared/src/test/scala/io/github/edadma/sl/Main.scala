@@ -6,15 +6,9 @@ object Main extends App {
 
   val input =
     """
-      |x = 1
+      |def add(a, b) = a
       |
-      |while x <= 5 do {
-      | if 2 < x < 5 then println('3 or 4')
-      | println(x)
-      | x = x + 1
-      |}
-      |
-      |println('done')
+      |println(add(3, 4))
       |""".stripMargin
 //    """
 //      |if 3 < 4 < 5 then println('yes')
