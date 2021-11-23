@@ -79,7 +79,7 @@ abstract class Env {
 
 class SimpleEnv(block: Code) extends Env {
 
-  var act: Activation = new Activation(null, block, Map())
+  var act: Activation = new Activation(null, block, Map(), null)
   val vars: mutable.Map[String, SLValue] =
     mutable.HashMap[String, SLValue](
       "println" -> SLBuiltin("println", args => {
