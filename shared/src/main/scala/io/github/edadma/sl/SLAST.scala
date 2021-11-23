@@ -18,6 +18,10 @@ case class ExpressionStat(expr: ExprAST) extends StatAST
 
 trait ExprAST extends SLAST
 
+case class BreakExpr(label: Option[Ident], expr: Option[ExprAST]) extends ExprAST
+
+case class ContinueExpr(label: Option[Ident]) extends ExprAST
+
 case class BlockExpr(stats: Seq[StatAST]) extends ExprAST
 
 case class InfixExpr(left: ExprAST, op: String, right: ExprAST) extends ExprAST

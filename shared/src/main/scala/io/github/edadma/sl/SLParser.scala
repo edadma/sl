@@ -56,6 +56,8 @@ class SLParser(val input: ParserInput) extends Parser {
     rule {
       "if" ~ pos ~ condition ~ "then" ~ construct ~ optElse ~> ConditionalExpr |
         "while" ~ pos ~ condition ~ "do" ~ construct ~ optElse ~> WhileExpr |
+        "break" ~ optional(ident) ~ optional(condition) ~> BreakExpr |
+        "continue" ~ optional(ident) ~> ContinueExpr |
         condition
     }
 
@@ -140,10 +142,13 @@ class SLParser(val input: ParserInput) extends Parser {
 
   def doubleQuoteString: Rule1[String] = rule('"' ~ capture(zeroOrMore("\\\"" | noneOf("\"\n"))) ~ '"' ~ sp)
 
+  def keyword: Rule0 =
+    rule(
+      "div" | "and" | "or" | "not" | "break" | "continue" | "var" | "val" | "def" | "mod" | "if" | "then" | "true" | "false" | "null" | "elsif" | "with" | "extends" | "class" | "module" | "match" | "case" | "for" | "do" | "while")
+
   def ident: Rule1[Ident] =
     rule {
-      pos ~ !("var" | "val" | "def" | "mod" | "if" | "then" | "true" | "false" | "null" | "elsif" | "with" | "match" | "case" | "for" | "do" | "while") ~ capture(
-        (CharPredicate.Alpha | '_') ~ zeroOrMore(CharPredicate.AlphaNum | '_')) ~ sp ~> Ident
+      pos ~ !keyword ~ capture((CharPredicate.Alpha | '_') ~ zeroOrMore(CharPredicate.AlphaNum | '_')) ~ sp ~> Ident
     }
 
   def parseSources: SourcesAST =
