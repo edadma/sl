@@ -9,12 +9,13 @@ object Main extends App {
       | println('a', a)
       | println('b', b)
       |
-      | def times_a(n) = n*a
+      | times_a = n -> n*a
       |
       | times_a(2) + b
       |}
       |
       |println(add(3, 4))
+      |println(a -> 2*a)
       |""".stripMargin
 //    """
 //      |def add(a, b) = {

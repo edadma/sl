@@ -52,6 +52,11 @@ object Compiler {
       buf += PosInst(pos)
 
     expr match {
+      case FunctionExpr(params, pos, body) =>
+        buf += SLFunction("*anonymous*", new Code(newBuffer {
+          compileExpr(pos, body)
+          buf += RetInst
+        }), params map (_.name))
       case VoidExpr => buf += SLVoid
       case CompareExpr(lpos, left, right) =>
         val fixups = new ListBuffer[Int]
@@ -161,12 +166,12 @@ object Compiler {
 
   def compileStat(stat: StatAST): Unit =
     stat match {
-      case DefStat(ident, parms, pos, body) =>
+      case DefStat(ident, params, pos, body) =>
         buf += SLString(ident.name)
         buf += SLFunction(ident.name, new Code(newBuffer {
           compileExpr(pos, body)
           buf += RetInst
-        }), parms map (_.name))
+        }), params map (_.name))
         buf += ConstInst
       case VarStat(ident, init) =>
       case ExpressionStat(expr) => compileExpr(null, expr)

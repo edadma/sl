@@ -46,9 +46,14 @@ class SLParser(val input: ParserInput) extends Parser {
       varStatement | defStatement | expression ~> ExpressionStat
     }
 
-  def expression: Rule1[ExprAST] = assignment
+  def expression: Rule1[ExprAST] = rule(function)
 
-  def assignment: Rule1[ExprAST] = rule(pos ~ applicative ~ "=" ~ pos ~ construct ~> AssignmentExpr | construct)
+  def functionParameters: Rule1[Seq[Ident]] =
+    rule(ident ~> (id => Seq(id)) | "(" ~ zeroOrMore(ident).separatedBy(",") ~ ")")
+
+  def function: Rule1[ExprAST] = rule(functionParameters ~ "->" ~ pos ~ expression ~> FunctionExpr | assignment)
+
+  def assignment: Rule1[ExprAST] = rule(pos ~ applicative ~ "=" ~ pos ~ expression ~> AssignmentExpr | construct)
 
   def optElse: Rule1[Option[ExprAST]] = rule(optional("else" ~ construct))
 

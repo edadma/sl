@@ -18,6 +18,8 @@ case class ExpressionStat(expr: ExprAST) extends StatAST
 
 trait ExprAST extends SLAST
 
+case class FunctionExpr(params: Seq[Ident], pos: Cursor, body: ExprAST) extends StatAST with ExprAST
+
 case class BreakExpr(label: Option[Ident], expr: Option[ExprAST]) extends ExprAST
 
 case class ContinueExpr(label: Option[Ident]) extends ExprAST
