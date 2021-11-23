@@ -166,7 +166,7 @@ object Compiler {
         buf += SLFunction(ident.name, new Code(newBuffer {
           compileExpr(pos, body)
           buf += RetInst
-        }), parms map (_.name))
+        }), parms map (_.name), null) // todo: how to get outer activation?
         buf += ConstInst
       case VarStat(ident, init) =>
       case ExpressionStat(expr) => compileExpr(null, expr)

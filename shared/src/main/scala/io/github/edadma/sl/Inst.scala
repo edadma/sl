@@ -73,7 +73,7 @@ case object ConstInst extends Inst {
     val value = env.pop.deref
     val name = env.pops
 
-    env.act.locals(name) = value
+    env.act.define(name, value)
   }
 }
 
@@ -182,6 +182,6 @@ case object LvalueInst extends Inst {
 
 case object RetInst extends Inst {
   def execute(env: Env): Unit = {
-    env.act = env.act.caller
+    env.act = env.act.asInstanceOf[FunctionActivation].caller
   }
 }

@@ -77,47 +77,17 @@ abstract class Env {
 
 }
 
-class SimpleEnv(block: Code) extends Env {
+class SourcesEnv(block: Code) extends Env {
 
-  var act: Activation = new Activation(null, block, Map(), null)
-  val vars: mutable.Map[String, SLValue] =
-    mutable.HashMap[String, SLValue](
-      "println" -> SLBuiltin("println", args => {
-        println(args mkString ", ")
-        SLVoid
-      })
-    )
+  var act: Activation = SourcesActivation(block)
 
-  def symbol(name: String): SLValue =
-    act.args get name match {
-      case Some(value) => value
-      case None =>
-        act.locals get name match {
-          case Some(value) => value
-          case None =>
-            vars get name match {
-              case Some(value) => value
-              case None        => problem(s"symbol not found: $name")
-            }
-        }
-    }
+  act.define("println", SLBuiltin("println", args => {
+    println(args mkString ", ")
+    SLVoid
+  }))
 
-  def lvalue(name: String): SLValue =
-    act.args get name match {
-      case Some(value) => value
-      case None =>
-        act.locals get name match {
-          case Some(value) => value
-          case None =>
-            vars get name match {
-              case Some(value) => value
-              case None =>
-                val mut = new VarMutable(SLNull)
+  def symbol(name: String): SLValue = act.symbol(name) getOrElse problem(s"symbol not found: $name")
 
-                act.locals(name) = mut
-                mut
-            }
-        }
-    }
+  def lvalue(name: String): SLValue = act.lvalue(name)
 
 }

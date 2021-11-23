@@ -67,7 +67,7 @@ case class SLFunction(name: String, code: Code, parms: Seq[String], outer: Activ
     if (args.length != parms.length)
       env.problem(s"wrong number of arguments for '$name()': got ${args.length}, expected ${parms.length}")
 
-    env.act = new Activation(env.act, code, parms zip args toMap, outer)
+    env.act = FunctionActivation(env.act, code, parms zip args toMap, outer)
   }
 
   override def toString: String = s"[function: $name]"
