@@ -9,9 +9,9 @@ object Main extends App {
       | println('a', a)
       | println('b', b)
       | 
-      | def double(a) = 2*a
+      | def times_a(n) = n*a
       | 
-      | double(a) + b
+      | times_a(2) + b
       |}
       |
       |println(add(3, 4) mod 4)
