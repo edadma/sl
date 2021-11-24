@@ -12,7 +12,7 @@ trait DeclarationAST
 
 case class ClassStat(ident: Ident, params: Seq[Ident], body: Seq[StatAST]) extends StatAST with DeclarationAST
 
-case class DefStat(ident: Ident, params: Seq[Ident], pos: Cursor, body: ExprAST) extends StatAST with DeclarationAST
+case class DefStat(ident: Ident, params: Seq[Ident], body: ExprAST) extends StatAST with DeclarationAST
 
 case class VarStat(ident: Ident, init: Option[ExprAST]) extends StatAST with DeclarationAST
 

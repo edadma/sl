@@ -209,10 +209,10 @@ object Compiler {
           buf += RetInst
         }), params map (_.name))
         buf += ConstInst
-      case DefStat(ident, params, pos, body) =>
+      case DefStat(ident, params, body) =>
         buf += SLString(ident.name)
         buf += SLDefinedFunction(ident.name, new Code(newBuffer {
-          compileExpr(pos, body)
+          compileExpr(null, body)
           buf += RetInst
         }), params map (_.name))
         buf += ConstInst
