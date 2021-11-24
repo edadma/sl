@@ -31,7 +31,6 @@ object Main extends App {
 //      |""".stripMargin
 //    """
 //      |if true then
-//      |
 //      | println('yes')
 //      | println('wow')
 //      |else
@@ -40,24 +39,24 @@ object Main extends App {
 //      |
 //      |println('done')
 //      |""".stripMargin
-//    """
-//      |count = 1
-//      |
-//      |def f(x) =
-//      | println(x)
-//      | x + 2
-//      |
-//      |y = f(5)
-//      |
-//      |println(y)
-//      |
-//      |while count <= 5
-//      | println(count++)
-//      |else
-//      | println('else')
-//      |
-//      |println('done')
-//      |""".stripMargin
+    """
+      |count = 1
+      |
+      |def f(x)
+      | println(x)
+      | x + 2
+      |
+      |y = f(5)
+      |
+      |println(y)
+      |
+      |while count <= 5
+      | println(count++)
+      |else
+      | println('else')
+      |
+      |println('done')
+      |""".stripMargin
 //    """
 //      |println(x = y = 123)
 //      |println(x, y)
@@ -65,12 +64,12 @@ object Main extends App {
 //      |println(x)
 //      |println(x, ++x, x)
 //      |""".stripMargin
-    """
-      |class c(a)
-      | def m1(x) = x + a
-      |
-      |println('123')
-      |""".stripMargin
+//    """
+//      |class c(a)
+//      | def m1(x) = x + a
+//      |
+//      |println('123')
+//      |""".stripMargin
 
   val buf = new StringBuilder
 

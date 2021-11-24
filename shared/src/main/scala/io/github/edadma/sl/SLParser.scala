@@ -39,11 +39,14 @@ class SLParser(val input: ParserInput) extends Parser {
 
   def varStatement: Rule1[VarStat] = rule("var" ~ ident ~ optional("=" ~ expression) ~> VarStat)
 
-  def defStatement: Rule1[DefStat] = rule("def" ~ ident ~ parameters ~ ("=" | nl) ~ pos ~ expression ~> DefStat)
+  def defStatement: Rule1[DefStat] =
+    rule("def" ~ ident ~ parameters ~ ("=" ~ pos ~ expression | optional("=") ~ pos ~ blockExpression) ~> DefStat)
 
   def parameters: Rule1[Seq[Ident]] = rule("(" ~ zeroOrMore(ident).separatedBy(",") ~ ")" | push(Nil))
 
-  def block: Rule1[Seq[StatAST]] = rule(nl ~ '\ue000' ~ oneOrMore(statement ~ nls) ~ '\ue001')
+  def block: Rule1[Seq[StatAST]] = rule(ch('\n') ~ '\ue000' ~ oneOrMore(statement ~ nls) ~ '\ue001')
+
+  def blockExpression: Rule1[ExprAST] = rule(block ~> BlockExpr)
 
   def statement: Rule1[StatAST] =
     rule {
@@ -55,16 +58,18 @@ class SLParser(val input: ParserInput) extends Parser {
   def functionParameters: Rule1[Seq[Ident]] =
     rule(ident ~> (id => Seq(id)) | "(" ~ zeroOrMore(ident).separatedBy(",") ~ ")")
 
-  def function: Rule1[ExprAST] = rule(functionParameters ~ "->" ~ pos ~ expression ~> FunctionExpr | assignment)
+  def function: Rule1[ExprAST] = rule(functionParameters ~ "->" ~ pos ~ expressionOrBlock ~> FunctionExpr | assignment)
 
-  def assignment: Rule1[ExprAST] = rule(pos ~ applicative ~ "=" ~ pos ~ expression ~> AssignmentExpr | construct)
+  def assignment: Rule1[ExprAST] = rule(pos ~ applicative ~ "=" ~ pos ~ expressionOrBlock ~> AssignmentExpr | construct)
 
-  def optElse: Rule1[Option[ExprAST]] = rule(optional(nls ~ "else" ~ expression))
+  def expressionOrBlock: Rule1[ExprAST] = rule(expression | blockExpression)
+
+  def optElse: Rule1[Option[ExprAST]] = rule(optional(nls ~ "else" ~ expressionOrBlock))
 
   def construct: Rule1[ExprAST] =
     rule {
-      "if" ~ pos ~ condition ~ ("then" | nl) ~ expression ~ optElse ~> ConditionalExpr |
-        "while" ~ pos ~ condition ~ ("do" | nl) ~ expression ~ optElse ~> WhileExpr |
+      "if" ~ pos ~ condition ~ ("then" ~ expression | optional("then") ~ blockExpression) ~ optElse ~> ConditionalExpr |
+        "while" ~ pos ~ condition ~ ("do" ~ expression | optional("do") ~ blockExpression) ~ optElse ~> WhileExpr |
         "break" ~ optional(ident) ~ optional(condition) ~> BreakExpr |
         "continue" ~ optional(ident) ~> ContinueExpr |
         condition
@@ -116,55 +121,33 @@ class SLParser(val input: ParserInput) extends Parser {
       pos ~ primary ~ oneOrMore(pos ~ "(" ~ zeroOrMore(pos ~ expression ~> Arg).separatedBy(",") ~ ")" ~> Args) ~> ApplyExpr | primary)
 
   def primary: Rule1[ExprAST] = rule {
-    boolean |
-      decimal |
-      integer |
-      nul |
-      variable |
-      string |
-      map |
-      seq |
-      block ~> BlockExpr |
-      "(" ~ expression ~ ")"
-  }
-
-  def map: Rule1[MapExpr] =
-    rule("{" ~ zeroOrMore(ident ~ ":" ~ pos ~ expression ~> MapEntry).separatedBy(",") ~ "}" ~> MapExpr)
-
-  def seq: Rule1[SeqExpr] = rule("[" ~ zeroOrMore(expression).separatedBy(",") ~ "]" ~> SeqExpr)
-
-  def nul: Rule1[NullExpr.type] = rule("null" ~ push(NullExpr))
-
-  def boolean: Rule1[BooleanExpr] =
-    rule((kw("true") | kw("false")) ~> BooleanExpr)
-
-  def decimal: Rule1[DecimalExpr] =
-    rule {
+    (kw("true") | kw("false")) ~> BooleanExpr |
       capture(
         (zeroOrMore(CharPredicate.Digit) ~ '.' ~ digits | digits ~ '.') ~
           optional((ch('e') | 'E') ~ optional(ch('+') | '-') ~ digits)
-      ) ~ sp ~> DecimalExpr
-    }
-
-  def integer: Rule1[IntegerExpr] = rule(capture(digits) ~ sp ~> IntegerExpr)
+      ) ~ sp ~> DecimalExpr |
+      capture(digits) ~ sp ~> IntegerExpr |
+      "null" ~ push(NullExpr) |
+      "()" ~ push(VoidExpr) |
+      ident ~> SymExpr |
+      '\'' ~ capture(zeroOrMore("\\'" | noneOf("'\n"))) ~ '\'' ~ sp ~> StringExpr |
+      '"' ~ capture(zeroOrMore("\\\"" | noneOf("\"\n"))) ~ '"' ~ sp ~> StringExpr |
+      "{" ~ zeroOrMore(ident ~ ":" ~ pos ~ expression ~> MapEntry).separatedBy(",") ~ "}" ~> MapExpr |
+      "[" ~ zeroOrMore(expression).separatedBy(",") ~ "]" ~> SeqExpr |
+      "(" ~ expression ~ ")"
+  }
 
   def digits: Rule0 = rule(oneOrMore(CharPredicate.Digit))
-
-  def variable: Rule1[SymExpr] = rule(ident ~> SymExpr)
-
-  def string: Rule1[StringExpr] = rule((singleQuoteString | doubleQuoteString) ~> StringExpr)
-
-  def singleQuoteString: Rule1[String] = rule('\'' ~ capture(zeroOrMore("\\'" | noneOf("'\n"))) ~ '\'' ~ sp)
-
-  def doubleQuoteString: Rule1[String] = rule('"' ~ capture(zeroOrMore("\\\"" | noneOf("\"\n"))) ~ '"' ~ sp)
 
   def keyword: Rule0 =
     rule(
       "div" | "and" | "or" | "not" | "break" | "continue" | "var" | "val" | "def" | "mod" | "if" | "then" | "true" | "false" | "null" | "else" | "elsif" | "with" | "extends" | "class" | "module" | "match" | "case" | "for" | "do" | "while")
 
+  // todo: code more efficient way of checking if an ident is a keyword
+
   def ident: Rule1[Ident] =
     rule {
-      pos ~ !keyword ~ capture((CharPredicate.Alpha | '_') ~ zeroOrMore(CharPredicate.AlphaNum | '_')) ~ sp ~> Ident
+      pos ~ /*!keyword ~*/ capture((CharPredicate.Alpha | '_') ~ zeroOrMore(CharPredicate.AlphaNum | '_')) ~ sp ~> Ident
     }
 
   def parseSources: SourcesAST =
