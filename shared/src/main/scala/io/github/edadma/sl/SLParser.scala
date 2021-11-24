@@ -39,7 +39,7 @@ class SLParser(val input: ParserInput) extends Parser {
 
   def parameters: Rule1[Seq[Ident]] = rule("(" ~ zeroOrMore(ident).separatedBy(",") ~ ")" | push(Nil))
 
-  def block: Rule1[ExprAST] = rule("{" ~ nl ~ zeroOrMore(statement ~ nl) ~ "}" ~> BlockExpr)
+  def block: Rule1[ExprAST] = rule(nl ~ '\ue000' ~ nl ~ zeroOrMore(statement ~ nl) ~ '\ue001' ~> BlockExpr)
 
   def statement: Rule1[StatAST] =
     rule {
@@ -55,7 +55,7 @@ class SLParser(val input: ParserInput) extends Parser {
 
   def assignment: Rule1[ExprAST] = rule(pos ~ applicative ~ "=" ~ pos ~ expression ~> AssignmentExpr | construct)
 
-  def optElse: Rule1[Option[ExprAST]] = rule(optional("else" ~ construct))
+  def optElse: Rule1[Option[ExprAST]] = rule(optional(nl ~ "else" ~ construct))
 
   def construct: Rule1[ExprAST] =
     rule {
@@ -156,7 +156,7 @@ class SLParser(val input: ParserInput) extends Parser {
 
   def keyword: Rule0 =
     rule(
-      "div" | "and" | "or" | "not" | "break" | "continue" | "var" | "val" | "def" | "mod" | "if" | "then" | "true" | "false" | "null" | "elsif" | "with" | "extends" | "class" | "module" | "match" | "case" | "for" | "do" | "while")
+      "div" | "and" | "or" | "not" | "break" | "continue" | "var" | "val" | "def" | "mod" | "if" | "then" | "true" | "false" | "null" | "else" | "elsif" | "with" | "extends" | "class" | "module" | "match" | "case" | "for" | "do" | "while")
 
   def ident: Rule1[Ident] =
     rule {

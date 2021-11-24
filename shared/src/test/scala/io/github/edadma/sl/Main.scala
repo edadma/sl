@@ -1,6 +1,9 @@
 package io.github.edadma.sl
 
 import pprint.pprintln
+import io.github.edadma.char_reader.CharReader
+
+import scala.annotation.tailrec
 
 object Main extends App {
   val input =
@@ -28,25 +31,54 @@ object Main extends App {
 //      |println(add(3, 4))
 //      |""".stripMargin
 //    """
-//      |if 3 < 4 < 5 then println('yes')
-//      |println('done')
-//      |""".stripMargin
-//    """
-//      |count = 1
-//      |
-//      |while count <= 5 do println(count++)
-//      |else println('else')
+//      |if false then
+//      | println('yes')
+//      | println('wow')
+//      |else
+//      | println('no')
+//      | println('wee')
 //      |
 //      |println('done')
 //      |""".stripMargin
     """
-      |println(x = y = 123)
-      |println(x, y)
-      |println(++x)
-      |println(x)
-      |println(x, ++x, x)
+      |count = 1
+      |
+      |def f(x) =
+      | println(x)
+      | x + 2
+      | 
+      |y = f(5)
+      |
+      |println(y)
+      |
+      |while count <= 5 do println(count++)
+      |else println('else')
+      |
+      |println('done')
       |""".stripMargin
-  val p = new SLParser(input)
+//    """
+//      |println(x = y = 123)
+//      |println(x, y)
+//      |println(++x)
+//      |println(x)
+//      |println(x, ++x, x)
+//      |""".stripMargin
+
+  val buf = new StringBuilder
+
+  @tailrec
+  def readch(r: CharReader): Unit =
+    if (r.more) {
+      buf +=
+        (r.ch match {
+          case c => c
+        })
+      readch(r.next)
+    }
+
+  readch(CharReader.fromString(input, indentation = Some(("//", "/*", "*/"))))
+
+  val p = new SLParser(buf.toString)
   val t = p.parseSources
 
 //  pprintln(t)

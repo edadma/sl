@@ -52,6 +52,7 @@ object Compiler {
       buf += PosInst(pos)
 
     expr match {
+      case BooleanExpr(b) => buf += SLBoolean(b == "true")
       case PrefixExpr("-", pos, expr) =>
         compileExpr(pos, expr)
         buf += NegInst
