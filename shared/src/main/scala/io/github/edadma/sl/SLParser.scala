@@ -35,17 +35,19 @@ class SLParser(val input: ParserInput) extends Parser {
 
   def statements: Rule1[Seq[StatAST]] = rule(zeroOrMore(statement ~ nls))
 
+  def classStatement: Rule1[ClassStat] = rule("class" ~ ident ~ parameters ~ block ~> ClassStat)
+
   def varStatement: Rule1[VarStat] = rule("var" ~ ident ~ optional("=" ~ expression) ~> VarStat)
 
   def defStatement: Rule1[DefStat] = rule("def" ~ ident ~ parameters ~ ("=" | nl) ~ pos ~ expression ~> DefStat)
 
   def parameters: Rule1[Seq[Ident]] = rule("(" ~ zeroOrMore(ident).separatedBy(",") ~ ")" | push(Nil))
 
-  def block: Rule1[ExprAST] = rule(nls ~ '\ue000' ~ nls ~ zeroOrMore(statement ~ nls) ~ '\ue001' ~> BlockExpr)
+  def block: Rule1[Seq[StatAST]] = rule(nl ~ '\ue000' ~ oneOrMore(statement ~ nls) ~ '\ue001')
 
   def statement: Rule1[StatAST] =
     rule {
-      varStatement | defStatement | expression ~> ExpressionStat
+      classStatement | varStatement | defStatement | expression ~> ExpressionStat
     }
 
   def expression: Rule1[ExprAST] = rule(function)
@@ -57,12 +59,12 @@ class SLParser(val input: ParserInput) extends Parser {
 
   def assignment: Rule1[ExprAST] = rule(pos ~ applicative ~ "=" ~ pos ~ expression ~> AssignmentExpr | construct)
 
-  def optElse: Rule1[Option[ExprAST]] = rule(optional(nls ~ "else" ~ construct))
+  def optElse: Rule1[Option[ExprAST]] = rule(optional(nls ~ "else" ~ expression))
 
   def construct: Rule1[ExprAST] =
     rule {
-      "if" ~ pos ~ condition ~ ("then" | nl) ~ construct ~ optElse ~> ConditionalExpr |
-        "while" ~ pos ~ condition ~ ("do" | nl) ~ construct ~ optElse ~> WhileExpr |
+      "if" ~ pos ~ condition ~ ("then" | nl) ~ expression ~ optElse ~> ConditionalExpr |
+        "while" ~ pos ~ condition ~ ("do" | nl) ~ expression ~ optElse ~> WhileExpr |
         "break" ~ optional(ident) ~ optional(condition) ~> BreakExpr |
         "continue" ~ optional(ident) ~> ContinueExpr |
         condition
@@ -122,7 +124,7 @@ class SLParser(val input: ParserInput) extends Parser {
       string |
       map |
       seq |
-      block |
+      block ~> BlockExpr |
       "(" ~ expression ~ ")"
   }
 

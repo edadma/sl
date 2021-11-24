@@ -75,7 +75,7 @@ object Compiler {
         buf += (if (op == "++") AddInst else SubInst)
         buf += AssignInst
       case FunctionExpr(params, pos, body) =>
-        buf += SLFunction("*anonymous*", new Code(newBuffer {
+        buf += SLDefinedFunction("*anonymous*", new Code(newBuffer {
           compileExpr(pos, body)
           buf += RetInst
         }), params map (_.name))
@@ -197,9 +197,21 @@ object Compiler {
 
   def compileStat(stat: StatAST): Unit =
     stat match {
+      case ClassStat(ident, params, stats) =>
+        buf += SLString(ident.name)
+        buf += SLDefinedFunction(ident.name, new Code(newBuffer {
+          stats foreach { s =>
+            compileStat(s)
+
+            if (s.isInstanceOf[ExpressionStat])
+              buf += DropInst
+          }
+          buf += RetInst
+        }), params map (_.name))
+        buf += ConstInst
       case DefStat(ident, params, pos, body) =>
         buf += SLString(ident.name)
-        buf += SLFunction(ident.name, new Code(newBuffer {
+        buf += SLDefinedFunction(ident.name, new Code(newBuffer {
           compileExpr(pos, body)
           buf += RetInst
         }), params map (_.name))

@@ -81,7 +81,7 @@ class SourcesEnv(block: Code) extends Env {
 
   var act: Activation = SourcesActivation(block)
 
-  act.define("println", SLBuiltin("println", args => {
+  act.define("println", SLNativeFunction("println", args => {
     println(args mkString ", ")
     SLVoid
   }))

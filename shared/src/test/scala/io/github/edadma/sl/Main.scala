@@ -29,16 +29,17 @@ object Main extends App {
 //      |
 //      |println(add(3, 4))
 //      |""".stripMargin
-    """
-      |if true then
-      | println('yes')
-      | println('wow')
-      |else
-      | println('no')
-      | println('wee')
-      |
-      |println('done')
-      |""".stripMargin
+//    """
+//      |if true then
+//      |
+//      | println('yes')
+//      | println('wow')
+//      |else
+//      | println('no')
+//      | println('wee')
+//      |
+//      |println('done')
+//      |""".stripMargin
 //    """
 //      |count = 1
 //      |
@@ -64,6 +65,12 @@ object Main extends App {
 //      |println(x)
 //      |println(x, ++x, x)
 //      |""".stripMargin
+    """
+      |class c(a)
+      | def m1(x) = x + a
+      |
+      |println('123')
+      |""".stripMargin
 
   val buf = new StringBuilder
 

@@ -65,7 +65,7 @@ trait Callable {
   def call(env: Env, args: Seq[SLValue]): Unit
 }
 
-case class SLFunction(name: String, code: Code, parms: Seq[String]) extends SLValue with Callable {
+case class SLDefinedFunction(name: String, code: Code, parms: Seq[String]) extends SLValue with Callable {
   val clas: SLClass = PrimitiveClass.FunctionClass
   var outer: Activation = _
 
@@ -84,8 +84,8 @@ case class SLFunction(name: String, code: Code, parms: Seq[String]) extends SLVa
   override def toString: String = s"[function: $name]"
 }
 
-case class SLBuiltin(name: String, f: Seq[SLValue] => SLValue) extends SLValue with Callable {
-  val clas: SLClass = PrimitiveClass.BuiltinClass
+case class SLNativeFunction(name: String, f: Seq[SLValue] => SLValue) extends SLValue with Callable {
+  val clas: SLClass = PrimitiveClass.FunctionClass
 
   def call(env: Env, args: Seq[SLValue]): Unit = env push f(args)
 
