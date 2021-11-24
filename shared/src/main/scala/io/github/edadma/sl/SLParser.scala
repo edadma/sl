@@ -37,7 +37,7 @@ class SLParser(val input: ParserInput) extends Parser {
 
   def classStatement: Rule1[ClassStat] = rule("class" ~ ident ~ parameters ~ block ~> ClassStat)
 
-  def varStatement: Rule1[VarStat] = rule("var" ~ ident ~ optional("=" ~ expression) ~> VarStat)
+  def varStatement: Rule1[VarStat] = rule("var" ~ ident ~ optional("=" ~ expressionOrBlock) ~> VarStat)
 
   def defStatement: Rule1[DefStat] =
     rule("def" ~ ident ~ parameters ~ ("=" ~ expression | optional("=") ~ blockExpression) ~> DefStat)
