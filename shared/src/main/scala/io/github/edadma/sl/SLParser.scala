@@ -22,16 +22,18 @@ class SLParser(val input: ParserInput) extends Parser {
 
   def sp: Rule0 = rule(quiet(zeroOrMore(anyOf(" \t") | '/' ~ '/' ~ zeroOrMore(noneOf("\n\r")))))
 
-  def nl: Rule0 = rule(zeroOrMore(anyOf("\r\n") ~ sp) ~ sp)
+  def nl: Rule0 = rule(oneOrMore(anyOf("\r\n")))
+
+  def nls: Rule0 = rule(zeroOrMore(anyOf("\r\n") ~ sp) ~ sp)
 
   def kw(s: String): Rule1[String] =
     rule(capture(str(s) ~ !CharPredicate.AlphaNum ~ sp) ~> ((s: String) => s.trim))
 
   def sym(s: String): Rule1[String] = rule(capture(s) ~> ((s: String) => s.trim))
 
-  def sources: Rule1[SourcesAST] = rule(nl ~ statements ~ EOI ~> SourcesAST)
+  def sources: Rule1[SourcesAST] = rule(nls ~ statements ~ EOI ~> SourcesAST)
 
-  def statements: Rule1[Seq[StatAST]] = rule(zeroOrMore(statement ~ nl))
+  def statements: Rule1[Seq[StatAST]] = rule(zeroOrMore(statement ~ nls))
 
   def varStatement: Rule1[VarStat] = rule("var" ~ ident ~ optional("=" ~ expression) ~> VarStat)
 
@@ -39,7 +41,7 @@ class SLParser(val input: ParserInput) extends Parser {
 
   def parameters: Rule1[Seq[Ident]] = rule("(" ~ zeroOrMore(ident).separatedBy(",") ~ ")" | push(Nil))
 
-  def block: Rule1[ExprAST] = rule(nl ~ '\ue000' ~ nl ~ zeroOrMore(statement ~ nl) ~ '\ue001' ~> BlockExpr)
+  def block: Rule1[ExprAST] = rule(nls ~ '\ue000' ~ nls ~ zeroOrMore(statement ~ nls) ~ '\ue001' ~> BlockExpr)
 
   def statement: Rule1[StatAST] =
     rule {
@@ -55,7 +57,7 @@ class SLParser(val input: ParserInput) extends Parser {
 
   def assignment: Rule1[ExprAST] = rule(pos ~ applicative ~ "=" ~ pos ~ expression ~> AssignmentExpr | construct)
 
-  def optElse: Rule1[Option[ExprAST]] = rule(optional(nl ~ "else" ~ construct))
+  def optElse: Rule1[Option[ExprAST]] = rule(optional(nls ~ "else" ~ construct))
 
   def construct: Rule1[ExprAST] =
     rule {
