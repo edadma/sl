@@ -52,6 +52,27 @@ object Compiler {
       buf += PosInst(pos)
 
     expr match {
+      case PrefixExpr("-", pos, expr) =>
+        compileExpr(pos, expr)
+        buf += NegInst
+      case PrefixExpr(op @ ("++" | "--"), pos, expr) =>
+        compileExpr(pos, expr)
+        buf += MutableInst
+        buf += DupInst
+        buf += DupInst
+        buf += SLValue.ONE
+        buf += (if (op == "++") AddInst else SubInst)
+        buf += AssignInst
+      case PostfixExpr(pos, expr, op @ ("++" | "--")) =>
+        compileExpr(pos, expr)
+        buf += MutableInst
+        buf += DupInst
+        buf += DerefInst
+        buf += SwapInst
+        buf += DupInst
+        buf += SLValue.ONE
+        buf += (if (op == "++") AddInst else SubInst)
+        buf += AssignInst
       case FunctionExpr(params, pos, body) =>
         buf += SLFunction("*anonymous*", new Code(newBuffer {
           compileExpr(pos, body)
@@ -107,14 +128,19 @@ object Compiler {
               })
         }
       case AssignmentExpr(lpos, lvalue, rpos, expr) =>
+        compileExpr(rpos, expr)
         compileExpr(lpos, lvalue, lvalue = true)
         buf += MutableInst
-        compileExpr(rpos, expr)
+        buf += OverInst
         buf += AssignInst
       case ApplyExpr(fpos, expr, calls) =>
         def generateCall(as: Args): Unit = {
           buf += CallableInst
-          as.args foreach { case Arg(pos, expr) => compileExpr(pos, expr) }
+          as.args foreach {
+            case Arg(pos, expr) =>
+              compileExpr(pos, expr)
+              buf += DerefInst
+          }
           buf += SLInteger(as.args.length)
           // todo: as.pos wasn't pushed
           buf += CallInst
@@ -138,7 +164,11 @@ object Compiler {
         buf += DropInst
         loop(start)
         patch(exit)
-        buf += SLVoid
+
+        if (no.isDefined)
+          compileExpr(null, no.get)
+        else
+          buf += SLVoid
       case ConditionalExpr(pos, cond, yes, no) =>
         compileExpr(pos, cond)
 

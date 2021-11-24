@@ -98,7 +98,14 @@ class SLParser(val input: ParserInput) extends Parser {
 
   def negative: Rule1[ExprAST] = rule(sym("-") ~ pos ~ negative ~> PrefixExpr | power)
 
-  def power: Rule1[ExprAST] = rule(pos ~ applicative ~ sym("^") ~ pos ~ power ~> RightInfixExpr | applicative)
+  def power: Rule1[ExprAST] = rule(pos ~ incdec ~ sym("^") ~ pos ~ power ~> RightInfixExpr | incdec)
+
+  def incdec: Rule1[ExprAST] =
+    rule {
+      (sym("++") | sym("--")) ~ pos ~ applicative ~> PrefixExpr |
+        pos ~ applicative ~ (sym("++") | sym("--")) ~> PostfixExpr |
+        applicative
+    }
 
   def applicative: Rule1[ExprAST] =
     rule(

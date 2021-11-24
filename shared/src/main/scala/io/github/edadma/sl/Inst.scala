@@ -8,6 +8,10 @@ case class PosInst(p: Cursor) extends Inst {
   def execute(env: Env): Unit = env pos p
 }
 
+case object NegInst extends Inst {
+  def execute(env: Env): Unit = env pushn -env.popn.doubleValue
+}
+
 case object AddInst extends Inst {
   def execute(env: Env): Unit = env pushn (env.popn.doubleValue + env.popn.doubleValue)
 }
@@ -61,10 +65,8 @@ case object MutableInst extends Inst {
 case object AssignInst extends Inst {
   def execute(env: Env): Unit = {
     val newValue = env.pop.deref
-    val mutable = env.pop.asInstanceOf[Mutable]
 
-    mutable.value = newValue
-    env push newValue
+    env.pop.asInstanceOf[Mutable].value = newValue
   }
 }
 
@@ -158,6 +160,10 @@ case object OverInst extends Inst {
 
 case object DropInst extends Inst {
   def execute(env: Env): Unit = env.pop
+}
+
+case object DerefInst extends Inst {
+  def execute(env: Env): Unit = env push env.pop.deref
 }
 
 case object CallableInst extends Inst {

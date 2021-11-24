@@ -17,6 +17,7 @@ object SLValue {
   val FALSE: SLBoolean = SLBoolean(false)
   val TRUE: SLBoolean = SLBoolean(true)
   val ZERO: SLNumber = SLNumber(0)
+  val ONE: SLNumber = SLNumber(1)
 
 }
 
@@ -41,7 +42,11 @@ case object SLNull extends SLValue {
 case class SLNumber(n: Number) extends SLValue {
   val clas: SLClass = PrimitiveClass.NumberClass
 
-  override def toString: String = n.toString
+  override def toString: String = {
+    val d = n.doubleValue
+
+    if (d.isWhole) n.longValue.toString else d.toString
+  }
 }
 
 case class SLBoolean(b: Boolean) extends SLValue {

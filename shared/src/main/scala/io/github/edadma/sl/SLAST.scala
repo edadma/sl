@@ -50,6 +50,8 @@ case class SeqExpr(elems: Seq[ExprAST]) extends ExprAST
 
 case class PrefixExpr(op: String, pos: Cursor, expr: ExprAST) extends ExprAST
 
+case class PostfixExpr(pos: Cursor, expr: ExprAST, op: String) extends ExprAST
+
 case class RightOper(op: String, pos: Cursor, expr: ExprAST)
 
 case class LeftInfixExpr(lpos: Cursor, left: ExprAST, right: Seq[RightOper]) extends ExprAST
