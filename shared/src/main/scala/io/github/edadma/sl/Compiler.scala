@@ -195,17 +195,20 @@ object Compiler {
     buf
   }
 
+  def compileStats(stats: Seq[StatAST]): Unit =
+    stats foreach { s =>
+      compileStat(s)
+
+      if (s.isInstanceOf[ExpressionStat])
+        buf += DropInst
+    }
+
   def compileStat(stat: StatAST): Unit =
     stat match {
       case ClassStat(ident, params, stats) =>
         buf += SLString(ident.name)
-        buf += SLDefinedFunction(ident.name, new Code(newBuffer {
-          stats foreach { s =>
-            compileStat(s)
-
-            if (s.isInstanceOf[ExpressionStat])
-              buf += DropInst
-          }
+        buf += DefinedClass(ident.name, Nil, new Code(newBuffer {
+          compileStats(stats)
           buf += RetInst
         }), params map (_.name))
         buf += ConstInst
@@ -222,13 +225,7 @@ object Compiler {
 
   def compileBlock(stats: Seq[StatAST]): ArrayBuffer[Inst] = {
     if (stats.nonEmpty) {
-      stats.init foreach { s =>
-        compileStat(s)
-
-        if (s.isInstanceOf[ExpressionStat])
-          buf += DropInst
-      }
-
+      compileStats(stats.init)
       compileStat(stats.last)
     }
 
