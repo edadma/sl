@@ -60,7 +60,7 @@ class SLParser(val input: ParserInput) extends Parser {
 
   def function: Rule1[ExprAST] = rule(functionParameters ~ "->" ~ pos ~ expressionOrBlock ~> FunctionExpr | assignment)
 
-  def assignment: Rule1[ExprAST] = rule(pos ~ applicative ~ "=" ~ pos ~ expressionOrBlock ~> AssignmentExpr | construct)
+  def assignment: Rule1[ExprAST] = rule(pos ~ applicative ~ "=" ~ pos ~ expressionOrBlock ~> AssignExpr | construct)
 
   def expressionOrBlock: Rule1[ExprAST] = rule(expression | blockExpression)
 

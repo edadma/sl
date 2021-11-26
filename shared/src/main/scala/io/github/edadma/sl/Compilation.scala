@@ -4,15 +4,39 @@ import scala.collection.mutable
 import scala.collection.mutable.{ArrayBuffer, ListBuffer}
 
 class Compilation {
-
   val decls = new mutable.HashMap[String, DeclarationAST]
 
-  def declarations(stats: Seq[StatAST]): Seq[DeclarationAST] =
+  def compileDecls(stats: Seq[StatAST]): Unit = {
+    def duplicate(pos: Cursor, name: String): Unit =
+      if (decls contains name)
+        problem(pos, s"duplicate declaration: $name")
+
     stats foreach {
-      case DefStat(ident, params, body)   =>
-      case VarStat(ident, init)           =>
-      case ClassStat(ident, params, body) =>
+      case d @ DefStat(Ident(pos, name), params, body) =>
+        duplicate(pos, name)
+        buf += SLString(name)
+        buf += SLDefinedFunction(name, new Compilation {
+          compileExpr(null, body)
+          buf += RetInst
+        }.code, params map (_.name))
+        buf += ConstInst
+        decls(name) = d
+      case d @ VarStat(Ident(pos, name), _) =>
+        duplicate(pos, name)
+        decls(name) = d
+      case d @ ValStat(Ident(pos, name), _, _) =>
+        duplicate(pos, name)
+        decls(name) = d
+      case ClassStat(Ident(pos, name), params, body) =>
+        duplicate(pos, name)
+      case ExpressionStat(AssignExpr(lpos, SymExpr(Ident(pos, name)), rpos, expr)) =>
+        decls get name match {
+          case None             =>
+          case Some(_: VarStat) =>
+          case _                => problem(pos, s"symbol not variable: $name")
+        }
     }
+  }
 
   trait BooleanCompilation
   case object BranchFalse extends BooleanCompilation
@@ -121,7 +145,7 @@ class Compilation {
                 case "mod" => ModInst
               })
         }
-      case AssignmentExpr(lpos, lvalue, rpos, expr) =>
+      case AssignExpr(lpos, lvalue, rpos, expr) =>
         compileExpr(rpos, expr)
         compileExpr(lpos, lvalue, lvalue = true)
         buf += MutableInst
@@ -204,14 +228,26 @@ class Compilation {
           compileStats(stats)
         }.code, params map (_.name))
         buf += ConstInst
-      case DefStat(ident, params, body) =>
-        buf += SLString(ident.name)
-        buf += SLDefinedFunction(ident.name, new Compilation {
-          compileExpr(null, body)
-          buf += RetInst
-        }.code, params map (_.name))
+      case _: DefStat =>
+      case d @ VarStat(Ident(pos, name), init) =>
+        buf += PosInst(pos)
+        buf += SLString(name)
+        buf += LvalueInst
+
+        if (init.isDefined) {
+          compileExpr(null, init.get)
+          buf += AssignInst
+        } else
+          buf += DropInst
+
+        d.initialized = true
+      case v @ ValStat(Ident(pos, name), init, _) =>
+        buf += PosInst(pos)
+        buf += SLString(name)
+        buf += SymInst
+        compileExpr(null, init)
         buf += ConstInst
-      case VarStat(ident, init) =>
+        v.initialized = true
       case ExpressionStat(expr) => compileExpr(null, expr)
     }
 

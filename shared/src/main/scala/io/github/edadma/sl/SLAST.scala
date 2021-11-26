@@ -14,7 +14,11 @@ case class ClassStat(ident: Ident, params: Seq[Ident], body: Seq[StatAST]) exten
 
 case class DefStat(ident: Ident, params: Seq[Ident], body: ExprAST) extends StatAST with DeclarationAST
 
-case class VarStat(ident: Ident, init: Option[ExprAST]) extends StatAST with DeclarationAST
+case class VarStat(ident: Ident, init: Option[ExprAST]) extends StatAST with DeclarationAST {
+  var initialized: Boolean = false
+}
+
+case class ValStat(ident: Ident, init: ExprAST, var initialized: Boolean = false) extends StatAST with DeclarationAST
 
 case class ExpressionStat(expr: ExprAST) extends StatAST
 
@@ -76,6 +80,6 @@ case class AndExpr(left: ExprAST, right: ExprAST) extends ExprAST
 
 case class CompareExpr(lpos: Cursor, left: ExprAST, right: Seq[RightOper]) extends ExprAST
 
-case class AssignmentExpr(lpos: Cursor, lvalue: ExprAST, rpos: Cursor, expr: ExprAST) extends ExprAST
+case class AssignExpr(lpos: Cursor, lvalue: ExprAST, rpos: Cursor, expr: ExprAST) extends ExprAST
 
 case class ReturnStat(expr: Option[ExprAST]) extends StatAST
