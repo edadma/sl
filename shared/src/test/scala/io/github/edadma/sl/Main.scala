@@ -90,7 +90,7 @@ object Main extends App {
 
 //  pprintln(t)
 
-  val c = Compiler(t)
+  val c = Compilation(t)
 
 //  println(c)
 

@@ -3,7 +3,7 @@ package io.github.edadma.sl
 import scala.collection.mutable
 import scala.collection.mutable.{ArrayBuffer, ListBuffer}
 
-object Compiler {
+class Compilation {
 
   def declarations(stats: Seq[StatAST]): Seq[DeclarationAST] = {
     val declrs = stats filter (_.isInstanceOf[DeclarationAST])
@@ -17,17 +17,7 @@ object Compiler {
 
   private var buf: ArrayBuffer[Inst] = new ArrayBuffer
 
-  def newBuffer(code: => Unit): ArrayBuffer[Inst] = {
-    val curbuf = buf
-
-    buf = new ArrayBuffer
-    code
-
-    val newbuf = buf
-
-    buf = curbuf
-    newbuf
-  }
+  def code: Code = new Code(buf)
 
   def compileExpr(pos: Cursor,
                   expr: ExprAST,
@@ -75,10 +65,10 @@ object Compiler {
         buf += (if (op == "++") AddInst else SubInst)
         buf += AssignInst
       case FunctionExpr(params, pos, body) =>
-        buf += SLDefinedFunction("*anonymous*", new Code(newBuffer {
+        buf += SLDefinedFunction("*anonymous*", new Compilation {
           compileExpr(pos, body)
           buf += RetInst
-        }), params map (_.name))
+        }.code, params map (_.name))
       case VoidExpr => buf += SLVoid
       case CompareExpr(lpos, left, right) =>
         val fixups = new ListBuffer[Int]
@@ -207,17 +197,16 @@ object Compiler {
     stat match {
       case ClassStat(ident, params, stats) =>
         buf += SLString(ident.name)
-        buf += DefinedClass(ident.name, Nil, new Code(newBuffer {
+        buf += DefinedClass(ident.name, Nil, new Compilation {
           compileStats(stats)
-          buf += RetInst
-        }), params map (_.name))
+        }.code, params map (_.name))
         buf += ConstInst
       case DefStat(ident, params, body) =>
         buf += SLString(ident.name)
-        buf += SLDefinedFunction(ident.name, new Code(newBuffer {
+        buf += SLDefinedFunction(ident.name, new Compilation {
           compileExpr(null, body)
           buf += RetInst
-        }), params map (_.name))
+        }.code, params map (_.name))
         buf += ConstInst
       case VarStat(ident, init) =>
       case ExpressionStat(expr) => compileExpr(null, expr)
@@ -232,6 +221,10 @@ object Compiler {
     buf
   }
 
-  def apply(sources: SourcesAST): Code = new Code(compileBlock(sources.stats))
+}
+
+object Compilation {
+
+  def apply(sources: SourcesAST): Code = new Compilation { compileStats(sources.stats) }.code
 
 }
