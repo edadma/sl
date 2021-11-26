@@ -5,11 +5,14 @@ import scala.collection.mutable.{ArrayBuffer, ListBuffer}
 
 class Compilation {
 
-  def declarations(stats: Seq[StatAST]): Seq[DeclarationAST] = {
-    val declrs = stats filter (_.isInstanceOf[DeclarationAST])
+  val decls = new mutable.HashMap[String, DeclarationAST]
 
-    declrs.asInstanceOf[Seq[DeclarationAST]]
-  }
+  def declarations(stats: Seq[StatAST]): Seq[DeclarationAST] =
+    stats foreach {
+      case DefStat(ident, params, body)   =>
+      case VarStat(ident, init)           =>
+      case ClassStat(ident, params, body) =>
+    }
 
   trait BooleanCompilation
   case object BranchFalse extends BooleanCompilation
