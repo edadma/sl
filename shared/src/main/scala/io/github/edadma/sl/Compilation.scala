@@ -15,20 +15,31 @@ class Compilation {
       case d @ DefStat(Ident(pos, name), params, body) =>
         duplicate(pos, name)
         buf += SLString(name)
-        buf += SLDefinedFunction(name, new Compilation {
+        buf += DefinedFunction(name, new Compilation {
           compileExpr(null, body)
           buf += RetInst
         }.code, params map (_.name))
         buf += ConstInst
         decls(name) = d
+      case ClassStat(Ident(pos, name), params, body) =>
+        duplicate(pos, name)
+        buf += SLString(name)
+
+        lazy val clas =
+          DefinedClass(name, Nil, new Compilation {
+            compileStats(stats)
+            buf += InstanceInst
+            buf += RetInst
+          }.code, params map (_.name))
+
+        buf += clas
+        buf += ConstInst
       case d @ VarStat(Ident(pos, name), _) =>
         duplicate(pos, name)
         decls(name) = d
       case d @ ValStat(Ident(pos, name), _, _) =>
         duplicate(pos, name)
         decls(name) = d
-      case ClassStat(Ident(pos, name), params, body) =>
-        duplicate(pos, name)
       case ExpressionStat(AssignExpr(lpos, SymExpr(Ident(pos, name)), rpos, expr)) =>
         decls get name match {
           case None             =>
@@ -69,13 +80,22 @@ class Compilation {
       buf += PosInst(pos)
 
     expr match {
+      case DotExpr(pos, expr, Ident(epos, elem)) =>
+        compileExpr(pos, expr)
+        buf += PosInst(epos)
+        buf += SLString(elem)
+        buf += DotInst
+      case SeqExpr(elems) =>
+        for (e <- elems.reverse) {
+          buf += SLValue.NIL
+          compileExpr(null, e)
+        }
       case BooleanExpr(b) => buf += SLBoolean(b == "true")
       case PrefixExpr("-", pos, expr) =>
         compileExpr(pos, expr)
         buf += NegInst
       case PrefixExpr(op @ ("++" | "--"), pos, expr) =>
         compileExpr(pos, expr)
-        buf += MutableInst
         buf += DupInst
         buf += DupInst
         buf += SLValue.ONE
@@ -83,7 +103,6 @@ class Compilation {
         buf += AssignInst
       case PostfixExpr(pos, expr, op @ ("++" | "--")) =>
         compileExpr(pos, expr)
-        buf += MutableInst
         buf += DupInst
         buf += DerefInst
         buf += SwapInst
@@ -92,7 +111,7 @@ class Compilation {
         buf += (if (op == "++") AddInst else SubInst)
         buf += AssignInst
       case FunctionExpr(params, pos, body) =>
-        buf += SLDefinedFunction("*anonymous*", new Compilation {
+        buf += DefinedFunction("*anonymous*", new Compilation {
           compileExpr(pos, body)
           buf += RetInst
         }.code, params map (_.name))
@@ -133,9 +152,11 @@ class Compilation {
       case StringExpr(s)    => buf += SLString(s)
       case LeftInfixExpr(lpos, left, right) =>
         compileExpr(lpos, left)
+        buf += DerefInst
         right foreach {
           case RightOper(op, pos, expr) =>
             compileExpr(pos, expr)
+            buf += DerefInst
             buf +=
               (op match {
                 case "+"   => AddInst
@@ -148,12 +169,10 @@ class Compilation {
       case AssignExpr(lpos, lvalue, rpos, expr) =>
         compileExpr(rpos, expr)
         compileExpr(lpos, lvalue, lvalue = true)
-        buf += MutableInst
         buf += OverInst
         buf += AssignInst
       case ApplyExpr(fpos, expr, calls) =>
         def generateCall(as: Args): Unit = {
-          buf += CallableInst
           as.args foreach {
             case Arg(pos, expr) =>
               compileExpr(pos, expr)
@@ -168,7 +187,6 @@ class Compilation {
         generateCall(calls.head)
 
         for (a <- calls.tail) {
-          buf += CallableInst
           generateCall(a)
         }
       case WhileExpr(pos, cond, body, no) =>
@@ -222,13 +240,8 @@ class Compilation {
 
   def compileStat(stat: StatAST): Unit =
     stat match {
-      case ClassStat(ident, params, stats) =>
-        buf += SLString(ident.name)
-        buf += DefinedClass(ident.name, Nil, new Compilation {
-          compileStats(stats)
-        }.code, params map (_.name))
-        buf += ConstInst
-      case _: DefStat =>
+      case _: ClassStat =>
+      case _: DefStat   =>
       case d @ VarStat(Ident(pos, name), init) =>
         buf += PosInst(pos)
         buf += SLString(name)

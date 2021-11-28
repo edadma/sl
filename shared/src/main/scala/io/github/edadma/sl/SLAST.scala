@@ -70,6 +70,8 @@ case class Args(pos: Cursor, args: Seq[Arg])
 
 case class ApplyExpr(pos: Cursor, expr: ExprAST, calls: Seq[Args]) extends ExprAST
 
+case class DotExpr(pos: Cursor, expr: ExprAST, elem: Ident) extends ExprAST
+
 case class ConditionalExpr(pos: Cursor, cond: ExprAST, yes: ExprAST, no: Option[ExprAST]) extends ExprAST
 
 case class WhileExpr(pos: Cursor, cond: ExprAST, body: ExprAST, no: Option[ExprAST]) extends ExprAST

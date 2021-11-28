@@ -68,7 +68,7 @@ object Main extends App {
       |class c(a)
       | def m1(x) = x + a
       |
-      |println('123')
+      |println([3, 4, 5])
       |""".stripMargin
 
   val buf = new StringBuilder

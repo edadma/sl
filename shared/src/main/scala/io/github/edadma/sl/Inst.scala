@@ -56,17 +56,14 @@ case object ModInst extends Inst {
   }
 }
 
-case object MutableInst extends Inst {
-  def execute(env: Env): Unit =
-    if (!env.top.isInstanceOf[Mutable])
-      env.problem("not an l-value")
-}
-
 case object AssignInst extends Inst {
   def execute(env: Env): Unit = {
     val newValue = env.pop.deref
 
-    env.pop.asInstanceOf[Mutable].value = newValue
+    env.pop match {
+      case m: Mutable => m.value = newValue
+      case x          => env.problem(s"not an l-value: $x")
+    }
   }
 }
 
@@ -162,19 +159,34 @@ case object DropInst extends Inst {
   def execute(env: Env): Unit = env.pop
 }
 
-case object DerefInst extends Inst {
-  def execute(env: Env): Unit = env push env.pop.deref
+case object InstanceInst extends Inst {
+  def execute(env: Env): Unit = {
+    env push Instance()
+  }
 }
 
-case object CallableInst extends Inst {
-  def execute(env: Env): Unit = if (!env.top.deref.isInstanceOf[Callable]) env.problem(s"not callable: ${env.top}")
+case object DotInst extends Inst {
+  def execute(env: Env): Unit = {
+    val elem = env.pops
+
+    env.pop.deref match {
+      case Instance(clas, con) => env push (con.locals getOrElse (elem, SLVoid))
+    }
+  }
+}
+
+case object DerefInst extends Inst {
+  def execute(env: Env): Unit = env push env.pop.deref
 }
 
 case object CallInst extends Inst {
   def execute(env: Env): Unit = {
     val args = Seq.fill(env.popi.intValue)(env.pop.deref).reverse // todo: not efficient
 
-    env.pop.deref.asInstanceOf[Callable].call(env, args)
+    env.pop.deref match {
+      case c: Callable => c.call(env, args)
+      case x           => if (!env.top.deref.isInstanceOf[Callable]) env.problem(s"not callable: $x")
+    }
   }
 }
 

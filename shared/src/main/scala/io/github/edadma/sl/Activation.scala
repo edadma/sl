@@ -42,3 +42,23 @@ case class FunctionActivation(caller: Activation, block: Code, args: Map[String,
   def lvalue(name: String): SLValue =
     args.getOrElse(name, locals.getOrElse(name, outer.symbol(name).getOrElse(define(name, new VarMutable(SLNull)))))
 }
+
+case class ConstructorActivation(clas: DefinedClass,
+                                 caller: Activation,
+                                 block: Code,
+                                 args: Map[String, SLValue],
+                                 outer: Activation)
+    extends Activation {
+  val locals = new mutable.HashMap[String, SLValue]
+  var ip = 0
+
+  def define(name: String, value: SLValue): SLValue = {
+    locals(name) = value
+    value
+  }
+
+  def symbol(name: String): Option[SLValue] = args get name orElse (locals get name orElse outer.symbol(name))
+
+  def lvalue(name: String): SLValue =
+    args.getOrElse(name, locals.getOrElse(name, outer.symbol(name).getOrElse(define(name, new VarMutable(SLNull)))))
+}
