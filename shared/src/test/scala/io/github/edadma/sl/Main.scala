@@ -65,10 +65,11 @@ object Main extends App {
 //      |println(x, ++x, x)
 //      |""".stripMargin
     """
-      |class c(a)
-      | def m1(x) = x + a
+      |class c
+      | x = 5
       |
-      |println([3, 4, 5])
+      |o = c()
+      |println(o.x)
       |""".stripMargin
 
   val buf = new StringBuilder

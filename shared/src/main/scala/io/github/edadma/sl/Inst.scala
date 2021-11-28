@@ -161,7 +161,7 @@ case object DropInst extends Inst {
 
 case object InstanceInst extends Inst {
   def execute(env: Env): Unit = {
-    env push Instance()
+    env push Instance(env.act.asInstanceOf[ConstructorActivation])
   }
 }
 
@@ -170,7 +170,7 @@ case object DotInst extends Inst {
     val elem = env.pops
 
     env.pop.deref match {
-      case Instance(clas, con) => env push (con.locals getOrElse (elem, SLVoid))
+      case Instance(con) => env push (con.locals getOrElse (elem, SLVoid))
     }
   }
 }

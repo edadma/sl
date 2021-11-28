@@ -24,15 +24,11 @@ class Compilation {
       case ClassStat(Ident(pos, name), params, body) =>
         duplicate(pos, name)
         buf += SLString(name)
-
-        lazy val clas =
-          DefinedClass(name, Nil, new Compilation {
-            compileStats(stats)
-            buf += InstanceInst
-            buf += RetInst
-          }.code, params map (_.name))
-
-        buf += clas
+        buf += DefinedClass(name, Nil, new Compilation {
+          compileStats(body)
+          buf += InstanceInst
+          buf += RetInst
+        }.code, params map (_.name))
         buf += ConstInst
       case d @ VarStat(Ident(pos, name), _) =>
         duplicate(pos, name)

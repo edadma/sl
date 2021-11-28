@@ -1,3 +1,5 @@
 package io.github.edadma.sl
 
-case class Instance(clas: DefinedClass, con: ConstructorActivation) extends SLValue
+case class Instance(con: ConstructorActivation) extends SLValue {
+  val clas: DefinedClass = con.clas
+}
