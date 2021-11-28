@@ -10,9 +10,7 @@ class Compilation {
   case object BranchFalse extends BooleanCompilation
   case object BranchTrue extends BooleanCompilation
 
-  private val buf: ArrayBuffer[Inst] = new ArrayBuffer
-
-  private val obj = new AnyRef
+  protected val buf: ArrayBuffer[Inst] = new ArrayBuffer
 
   def code: Code = new Code(buf)
 
@@ -25,28 +23,20 @@ class Compilation {
       case d @ DefStat(Ident(pos, name), params, body) =>
         duplicate(pos, name)
         buf += SLString(name)
-
-        val func = new Compilation
-
-        func.compileExpr(null, body)
-        func.buf += RetInst
-
-        buf += DefinedFunction(name, func.code, params map (_.name))
+        buf += DefinedFunction(name, new Compilation {
+          compileExpr(null, body)
+          buf += RetInst
+        }.code, params map (_.name))
         buf += ConstInst
         decls(name) = d
       case ClassStat(Ident(pos, name), params, body) =>
         duplicate(pos, name)
         buf += SLString(name)
-        println(obj)
-
-        val clas = new Compilation
-
-        println(clas.obj)
-        clas.compileStats(body)
-        clas.buf += InstanceInst
-        clas.buf += RetInst
-
-        buf += DefinedClass(name, Nil, clas.code, params map (_.name))
+        buf += DefinedClass(name, Nil, new Compilation {
+          compileStats(body)
+          buf += InstanceInst
+          buf += RetInst
+        }.code, params map (_.name))
         buf += ConstInst
       case d @ VarStat(Ident(pos, name), _) =>
         duplicate(pos, name)
@@ -118,11 +108,10 @@ class Compilation {
         buf += (if (op == "++") AddInst else SubInst)
         buf += AssignInst
       case FunctionExpr(params, pos, body) =>
-        val func = new Compilation
-
-        func.compileExpr(pos, body)
-        func.buf += RetInst
-        buf += DefinedFunction("*anonymous*", func.code, params map (_.name))
+        buf += DefinedFunction("*anonymous*", new Compilation {
+          compileExpr(pos, body)
+          buf += RetInst
+        }.code, params map (_.name))
       case VoidExpr => buf += SLVoid
       case CompareExpr(lpos, left, right) =>
         val fixups = new ListBuffer[Int]
