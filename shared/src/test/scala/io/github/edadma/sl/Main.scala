@@ -7,19 +7,18 @@ import scala.annotation.tailrec
 
 object Main extends App {
   val input =
-//    """
-//      |def add(a, b) = {
-//      | println('a', a)
-//      | println('b', b)
-//      |
-//      | times_a = n -> n*a
-//      |
-//      | times_a(2) + b
-//      |}
-//      |
-//      |println(add(3, 4))
-//      |println(a -> 2*a)
-//      |""".stripMargin
+    """
+      |def add(a, b) =
+      | println('a', a)
+      | println('b', b)
+      |
+      | times_a = n -> n*a
+      |
+      | times_a(2) + b
+      |
+      |println(add(3, 4))
+      |println((a -> 3*a)(4))
+      |""".stripMargin
 //    """
 //      |def add(a, b) =
 //      | println('a', a)
@@ -64,13 +63,13 @@ object Main extends App {
 //      |println(x)
 //      |println(x, ++x, x)
 //      |""".stripMargin
-    """
-      |class c
-      | x = 5
-      |
-      |o = c()
-      |println(o.x)
-      |""".stripMargin
+//    """
+//      |class c
+//      | x = 5
+//      |
+//      |o = c()
+//      |println(o.x)
+//      |""".stripMargin
 
   val buf = new StringBuilder
 

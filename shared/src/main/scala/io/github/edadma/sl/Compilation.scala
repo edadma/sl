@@ -6,6 +6,16 @@ import scala.collection.mutable.{ArrayBuffer, ListBuffer}
 class Compilation {
   val decls = new mutable.HashMap[String, DeclarationAST]
 
+  trait BooleanCompilation
+  case object BranchFalse extends BooleanCompilation
+  case object BranchTrue extends BooleanCompilation
+
+  private val buf: ArrayBuffer[Inst] = new ArrayBuffer
+
+  private val obj = new AnyRef
+
+  def code: Code = new Code(buf)
+
   def compileDecls(stats: Seq[StatAST]): Unit = {
     def duplicate(pos: Cursor, name: String): Unit =
       if (decls contains name)
@@ -15,20 +25,28 @@ class Compilation {
       case d @ DefStat(Ident(pos, name), params, body) =>
         duplicate(pos, name)
         buf += SLString(name)
-        buf += DefinedFunction(name, new Compilation {
-          compileExpr(null, body)
-          buf += RetInst
-        }.code, params map (_.name))
+
+        val func = new Compilation
+
+        func.compileExpr(null, body)
+        func.buf += RetInst
+
+        buf += DefinedFunction(name, func.code, params map (_.name))
         buf += ConstInst
         decls(name) = d
       case ClassStat(Ident(pos, name), params, body) =>
         duplicate(pos, name)
         buf += SLString(name)
-        buf += DefinedClass(name, Nil, new Compilation {
-          compileStats(body)
-          buf += InstanceInst
-          buf += RetInst
-        }.code, params map (_.name))
+        println(obj)
+
+        val clas = new Compilation
+
+        println(clas.obj)
+        clas.compileStats(body)
+        clas.buf += InstanceInst
+        clas.buf += RetInst
+
+        buf += DefinedClass(name, Nil, clas.code, params map (_.name))
         buf += ConstInst
       case d @ VarStat(Ident(pos, name), _) =>
         duplicate(pos, name)
@@ -42,16 +60,9 @@ class Compilation {
           case Some(_: VarStat) =>
           case _                => problem(pos, s"symbol not variable: $name")
         }
+      case _ =>
     }
   }
-
-  trait BooleanCompilation
-  case object BranchFalse extends BooleanCompilation
-  case object BranchTrue extends BooleanCompilation
-
-  private var buf: ArrayBuffer[Inst] = new ArrayBuffer
-
-  def code: Code = new Code(buf)
 
   def compileExpr(pos: Cursor,
                   expr: ExprAST,
@@ -107,10 +118,11 @@ class Compilation {
         buf += (if (op == "++") AddInst else SubInst)
         buf += AssignInst
       case FunctionExpr(params, pos, body) =>
-        buf += DefinedFunction("*anonymous*", new Compilation {
-          compileExpr(pos, body)
-          buf += RetInst
-        }.code, params map (_.name))
+        val func = new Compilation
+
+        func.compileExpr(pos, body)
+        func.buf += RetInst
+        buf += DefinedFunction("*anonymous*", func.code, params map (_.name))
       case VoidExpr => buf += SLVoid
       case CompareExpr(lpos, left, right) =>
         val fixups = new ListBuffer[Int]
@@ -273,6 +285,10 @@ class Compilation {
 
 object Compilation {
 
-  def apply(sources: SourcesAST): Code = new Compilation { compileStats(sources.stats) }.code
+  def apply(sources: SourcesAST): Code =
+    new Compilation {
+      compileDecls(sources.stats)
+      compileStats(sources.stats)
+    }.code
 
 }
