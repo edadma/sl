@@ -13,7 +13,7 @@ trait Activation {
   def lvalue(name: String): SLValue
 }
 
-case class SourcesActivation(block: Code) extends Activation {
+case class ModuleActivation(block: Code) extends Activation {
   val locals = new mutable.HashMap[String, SLValue]
   var ip = 0
 

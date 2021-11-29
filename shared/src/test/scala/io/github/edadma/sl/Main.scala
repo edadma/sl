@@ -19,15 +19,6 @@ object Main extends App {
 //      |println((a -> 3*a)(4))
 //      |""".stripMargin
 //    """
-//      |def add(a, b) =
-//      | println('a', a)
-//      | println('b', b)
-//      |
-//      | a + b
-//      |
-//      |println(add(3, 4))
-//      |""".stripMargin
-//    """
 //      |if true then
 //      | println('yes')
 //      | println('wow')
@@ -55,13 +46,16 @@ object Main extends App {
 //      |
 //      |println('done')
 //      |""".stripMargin
-//    """
-//      |println(x = y = 123)
-//      |println(x, y)
-//      |println(++x)
-//      |println(x)
-//      |println(x, ++x, x)
-//      |""".stripMargin
+    """
+      |println(x = y = 123)
+      |println(x, y)
+      |println(++x)
+      |println(x)
+      |println(x, ++x, x)
+      |println(x++)
+      |println(x)
+      |println(x, x++, x)
+      |""".stripMargin
 //    """
 //      |class c(a)
 //      | x = a + 10
@@ -97,7 +91,7 @@ object Main extends App {
 
 //  c.listing()
 
-  val e = new SourcesEnv(c)
+  val e = new ModuleEnv(c)
 
 //  e.trace = true
   e.run()

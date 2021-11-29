@@ -77,9 +77,9 @@ abstract class Env {
 
 }
 
-class SourcesEnv(block: Code) extends Env {
+class ModuleEnv(code: Code) extends Env {
 
-  var act: Activation = SourcesActivation(block)
+  var act: Activation = ModuleActivation(code)
 
   act.define("println", SLNativeFunction("println", args => {
     println(args mkString ", ")
