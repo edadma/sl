@@ -38,7 +38,7 @@ object Main extends App {
 //      |println('done')
 //      |""".stripMargin
 //    """
-//      |count = 1
+//      |var count = 1
 //      |
 //      |def f(x)
 //      | println(x)
@@ -62,17 +62,17 @@ object Main extends App {
 //      |println(x)
 //      |println(x, ++x, x)
 //      |""".stripMargin
-    """
-      |class c(a)
-      | x = a + 10
-      |
-      | def m = a + 20
-      |
-      |o1 = c(3)
-      |o2 = c(4)
-      |
-      |println(o1.x, o1.m(), o2.x, o2.m())
-      |""".stripMargin
+//    """
+//      |class c(a)
+//      | x = a + 10
+//      |
+//      | def m = a + 20
+//      |
+//      |o1 = c(3)
+//      |o2 = c(4)
+//      |
+//      |println(o1.x, o1.m(), o2.x, o2.m())
+//      |""".stripMargin
 
   val buf = new StringBuilder
 

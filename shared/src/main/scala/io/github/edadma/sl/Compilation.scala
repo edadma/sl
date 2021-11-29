@@ -166,10 +166,18 @@ class Compilation {
               })
         }
       case AssignExpr(lpos, lvalue, rpos, expr) =>
-        compileExpr(rpos, expr)
-        compileExpr(lpos, lvalue, lvalue = true)
-        buf += OverInst
-        buf += AssignInst
+        lvalue match {
+          case SymExpr(Ident(pos, name)) if (decls contains name) && decls(name).isInstanceOf[ValStat] =>
+            compileExpr(rpos, expr)
+            buf += SLString(name)
+            buf += OverInst
+            buf += ConstInst
+          case _ =>
+            compileExpr(rpos, expr)
+            compileExpr(lpos, lvalue, lvalue = true)
+            buf += OverInst
+            buf += AssignInst
+        }
       case ApplyExpr(fpos, expr, calls) =>
         def generateCall(as: Args): Unit = {
           as.args foreach {
