@@ -27,8 +27,12 @@ case class SourcesActivation(block: Code) extends Activation {
   def lvalue(name: String): SLValue = locals.getOrElse(name, define(name, new VarMutable(SLNull)))
 }
 
+trait FunctionLikeActivation extends Activation {
+  val caller: Activation
+}
+
 case class FunctionActivation(caller: Activation, block: Code, args: Map[String, SLValue], outer: Activation)
-    extends Activation {
+    extends FunctionLikeActivation {
   val locals = new mutable.HashMap[String, SLValue]
   var ip = 0
 
@@ -48,7 +52,7 @@ case class ConstructorActivation(clas: DefinedClass,
                                  block: Code,
                                  args: Map[String, SLValue],
                                  outer: Activation)
-    extends Activation {
+    extends FunctionLikeActivation {
   val locals = new mutable.HashMap[String, SLValue]
   var ip = 0
 

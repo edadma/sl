@@ -200,6 +200,6 @@ case object LvalueInst extends Inst {
 
 case object RetInst extends Inst {
   def execute(env: Env): Unit = {
-    env.act = env.act.asInstanceOf[FunctionActivation].caller
+    env.act = env.act.asInstanceOf[FunctionLikeActivation].caller
   }
 }

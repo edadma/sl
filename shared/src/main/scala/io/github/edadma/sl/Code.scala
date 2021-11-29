@@ -9,7 +9,7 @@ class Code(insts: collection.Seq[Inst]) {
 
   def length: Int = code.length
 
-  override def toString: String = {
-    code.zipWithIndex map { case (s, i) => f"$i% 4d $s" } mkString "\n"
+  def listing(): Unit = {
+    println(code.zipWithIndex map { case (s, i) => f"$i% 4d $s" } mkString "\n")
   }
 }

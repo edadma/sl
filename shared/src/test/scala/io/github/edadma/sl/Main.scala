@@ -1,24 +1,23 @@
 package io.github.edadma.sl
 
-import pprint.pprintln
 import io.github.edadma.char_reader.CharReader
 
 import scala.annotation.tailrec
 
 object Main extends App {
   val input =
-    """
-      |def add(a, b) =
-      | println('a', a)
-      | println('b', b)
-      |
-      | times_a = n -> n*a
-      |
-      | times_a(2) + b
-      |
-      |println(add(3, 4))
-      |println((a -> 3*a)(4))
-      |""".stripMargin
+//    """
+//      |def add(a, b) =
+//      | println('a', a)
+//      | println('b', b)
+//      |
+//      | times_a = n -> n*a
+//      |
+//      | times_a(2) + b
+//      |
+//      |println(add(3, 4))
+//      |println((a -> 3*a)(4))
+//      |""".stripMargin
 //    """
 //      |def add(a, b) =
 //      | println('a', a)
@@ -63,13 +62,16 @@ object Main extends App {
 //      |println(x)
 //      |println(x, ++x, x)
 //      |""".stripMargin
-//    """
-//      |class c
-//      | x = 5
-//      |
-//      |o = c()
-//      |println(o.x)
-//      |""".stripMargin
+    """
+      |class c(a)
+      | x = a + 1
+      | 
+      | def m = x
+      |
+      |o1 = c(3)
+      |
+      |println(o1.m())
+      |""".stripMargin
 
   val buf = new StringBuilder
 
@@ -92,7 +94,7 @@ object Main extends App {
 
   val c = Compilation(t)
 
-//  println(c)
+//  c.listing()
 
   val e = new SourcesEnv(c)
 
