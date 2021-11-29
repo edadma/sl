@@ -33,6 +33,7 @@ class Compilation {
         duplicate(pos, name)
         buf += SLString(name)
         buf += DefinedClass(name, Nil, new Compilation {
+          compileDecls(body)
           compileStats(body)
           buf += InstanceInst
           buf += RetInst
@@ -46,7 +47,8 @@ class Compilation {
         decls(name) = d
       case ExpressionStat(AssignExpr(lpos, SymExpr(Ident(pos, name)), rpos, expr)) =>
         decls get name match {
-          case None             =>
+          case None =>
+            decls(name) = ValStat(Ident(pos, name), null)
           case Some(_: VarStat) =>
           case _                => problem(pos, s"symbol not variable: $name")
         }

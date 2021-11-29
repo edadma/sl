@@ -64,13 +64,12 @@ object Main extends App {
 //      |""".stripMargin
     """
       |class c(a)
-      | x = a + 1
-      | 
-      | def m = x
+      | def m = a + 1
       |
       |o1 = c(3)
+      |o2 = c(4)
       |
-      |println(o1.m())
+      |println(o1.m(), o2.m())
       |""".stripMargin
 
   val buf = new StringBuilder
