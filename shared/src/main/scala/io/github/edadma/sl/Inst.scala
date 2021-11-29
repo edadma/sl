@@ -170,9 +170,7 @@ case object DotInst extends Inst {
     val elem = env.pops
 
     env.pop.deref match {
-      case Instance(con) =>
-        println(con.locals)
-        env push (con.locals getOrElse (elem, SLVoid))
+      case Instance(con) => env push (con.locals getOrElse (elem, SLVoid))
     }
   }
 }

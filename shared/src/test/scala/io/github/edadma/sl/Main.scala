@@ -15,7 +15,7 @@ object Main extends App {
 //      |
 //      | times_a(2) + b
 //      |
-//      |println(add(3, 4))
+//      |println(add(3, 4), add(5, 6))
 //      |println((a -> 3*a)(4))
 //      |""".stripMargin
 //    """
@@ -64,12 +64,14 @@ object Main extends App {
 //      |""".stripMargin
     """
       |class c(a)
-      | def m = a + 1
+      | x = a + 10
+      |
+      | def m = a + 20
       |
       |o1 = c(3)
       |o2 = c(4)
       |
-      |println(o1.m(), o2.m())
+      |println(o1.x, o1.m(), o2.x, o2.m())
       |""".stripMargin
 
   val buf = new StringBuilder

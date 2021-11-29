@@ -18,5 +18,5 @@ case class DefinedFunction(name: String, code: Code, parms: Seq[String]) extends
     super.execute(env)
   }
 
-  override def toString: String = s"[function: $name]"
+  override def toString: String = s"[function: $name, $outer]"
 }
