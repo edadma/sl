@@ -23,7 +23,7 @@ class Compilation {
       case d @ DefStat(Ident(pos, name), params, body) =>
         duplicate(pos, name)
         buf += SLString(name)
-        buf += DefinedFunction(name, new Compilation {
+        buf += FunctionInst(name, new Compilation {
           compileExpr(null, body)
           buf += RetInst
         }.code, params map (_.name))
@@ -32,7 +32,7 @@ class Compilation {
       case ClassStat(Ident(pos, name), params, body) =>
         duplicate(pos, name)
         buf += SLString(name)
-        buf += DefinedClass(name, Nil, new Compilation {
+        buf += ClassInst(name, new Compilation {
           compileDecls(body)
           compileStats(body)
           buf += InstanceInst
@@ -110,7 +110,7 @@ class Compilation {
         buf += (if (op == "++") AddInst else SubInst)
         buf += AssignInst
       case FunctionExpr(params, pos, body) =>
-        buf += DefinedFunction("*anonymous*", new Compilation {
+        buf += FunctionInst("*anonymous*", new Compilation {
           compileExpr(pos, body)
           buf += RetInst
         }.code, params map (_.name))

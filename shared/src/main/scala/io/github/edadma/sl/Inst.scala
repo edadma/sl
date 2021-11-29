@@ -165,6 +165,20 @@ case object InstanceInst extends Inst {
   }
 }
 
+case class FunctionInst(name: String, code: Code, parms: Seq[String]) extends Inst {
+  def execute(env: Env): Unit = {
+
+    env push DefinedFunction(name, code, parms, env.act)
+  }
+}
+
+case class ClassInst(name: String, code: Code, parms: Seq[String]) extends Inst {
+  def execute(env: Env): Unit = {
+
+    env push DefinedClass(name, code, parms, env.act)
+  }
+}
+
 case object DotInst extends Inst {
   def execute(env: Env): Unit = {
     val elem = env.pops

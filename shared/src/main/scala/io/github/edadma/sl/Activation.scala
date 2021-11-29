@@ -63,6 +63,7 @@ case class ConstructorActivation(clas: DefinedClass,
 
   def symbol(name: String): Option[SLValue] = args get name orElse (locals get name orElse outer.symbol(name))
 
-  def lvalue(name: String): SLValue =
+  def lvalue(name: String): SLValue = {
     args.getOrElse(name, locals.getOrElse(name, outer.symbol(name).getOrElse(define(name, new VarMutable(SLNull)))))
+  }
 }
