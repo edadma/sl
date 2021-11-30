@@ -11,6 +11,7 @@ object PrimitiveClass {
   val NumberClass: PrimitiveClass = PrimitiveClass("Number", Seq(AnyClass))
   val BooleanClass: PrimitiveClass = PrimitiveClass("Boolean", Seq(AnyClass))
   val ListClass: PrimitiveClass = PrimitiveClass("List", Seq(AnyClass))
+  val MapClass: PrimitiveClass = PrimitiveClass("Map", Seq(AnyClass))
   val StringClass: PrimitiveClass = PrimitiveClass("String", Seq(AnyClass))
   val FunctionClass: PrimitiveClass = PrimitiveClass("Function", Seq(AnyClass))
   val ClassClass: PrimitiveClass = PrimitiveClass("Class", Seq(AnyClass))

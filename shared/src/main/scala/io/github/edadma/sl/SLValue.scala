@@ -1,7 +1,7 @@
 package io.github.edadma.sl
 
 import scala.collection.mutable
-import scala.collection.mutable.{ArrayBuffer, ListBuffer}
+import scala.collection.mutable.ArrayBuffer
 import scala.language.postfixOps
 
 trait SLValue extends Inst {
@@ -14,6 +14,8 @@ trait SLValue extends Inst {
 
 object SLValue {
 
+  val EPSILON: SLString = SLString("")
+  val EMPTY: SLMap = SLMap(Map())
   val FALSE: SLBoolean = SLBoolean(false)
   val TRUE: SLBoolean = SLBoolean(true)
   val ZERO: SLNumber = SLNumber(0)
@@ -54,6 +56,12 @@ case class SLList(l: List[SLValue]) extends SLValue {
   val clas: SLClass = PrimitiveClass.ListClass
 
   override def toString: String = l.mkString("[", ", ", "]")
+}
+
+case class SLMap(m: Map[SLValue, SLValue]) extends SLValue {
+  val clas: SLClass = PrimitiveClass.MapClass
+
+  override def toString: String = m.mkString("{", ", ", "}")
 }
 
 case class SLBoolean(b: Boolean) extends SLValue {
