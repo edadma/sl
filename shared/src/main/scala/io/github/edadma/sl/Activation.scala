@@ -3,7 +3,7 @@ package io.github.edadma.sl
 import scala.collection.mutable
 
 trait Activation {
-  val block: Code
+  val code: Code
   var ip: Int
 
   def define(name: String, value: SLValue): SLValue
@@ -13,7 +13,7 @@ trait Activation {
   def lvalue(name: String): SLValue
 }
 
-case class ModuleActivation(block: Code) extends Activation {
+case class ModuleActivation(code: Code) extends Activation {
   val locals = new mutable.HashMap[String, SLValue]
   var ip = 0
 
@@ -22,16 +22,17 @@ case class ModuleActivation(block: Code) extends Activation {
     value
   }
 
-  def symbol(name: String): Option[SLValue] = locals get name
+  def symbol(name: String): Option[SLValue] = locals get name orElse (Global.map get name)
 
-  def lvalue(name: String): SLValue = locals.getOrElse(name, define(name, new VarMutable(SLNull)))
+  def lvalue(name: String): SLValue =
+    locals.getOrElse(name, Global.map.getOrElse(name, define(name, new VarMutable(SLNull))))
 }
 
 trait FunctionLikeActivation extends Activation {
   val caller: Activation
 }
 
-case class FunctionActivation(caller: Activation, block: Code, args: Map[String, SLValue], outer: Activation)
+case class FunctionActivation(caller: Activation, code: Code, args: Map[String, SLValue], outer: Activation)
     extends FunctionLikeActivation {
   val locals = new mutable.HashMap[String, SLValue]
   var ip = 0
@@ -49,7 +50,7 @@ case class FunctionActivation(caller: Activation, block: Code, args: Map[String,
 
 case class ConstructorActivation(clas: DefinedClass,
                                  caller: Activation,
-                                 block: Code,
+                                 code: Code,
                                  args: Map[String, SLValue],
                                  outer: Activation)
     extends FunctionLikeActivation {

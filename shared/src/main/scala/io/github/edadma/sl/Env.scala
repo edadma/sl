@@ -15,8 +15,8 @@ abstract class Env {
   def lvalue(name: String): SLValue
 
   def run(): Unit =
-    while (act.ip < act.block.length) {
-      val inst = act.block(act.ip)
+    while (act.ip < act.code.length) {
+      val inst = act.code(act.ip)
 
       if (trace)
         println(f"${act.ip}% 3d $inst")
@@ -80,11 +80,6 @@ abstract class Env {
 class ModuleEnv(code: Code) extends Env {
 
   var act: Activation = ModuleActivation(code)
-
-  act.define("println", SLNativeFunction("println", args => {
-    println(args mkString ", ")
-    SLVoid
-  }))
 
   def symbol(name: String): SLValue = act.symbol(name) getOrElse problem(s"symbol not found: $name")
 

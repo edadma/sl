@@ -72,10 +72,14 @@ trait Callable {
   def call(env: Env, args: Seq[SLValue]): Unit
 }
 
-case class SLNativeFunction(name: String, f: Seq[SLValue] => SLValue) extends SLValue with Callable {
+case class SLNativeFunction(name: String, f: PartialFunction[Seq[SLValue], SLValue]) extends SLValue with Callable {
   val clas: SLClass = PrimitiveClass.FunctionClass
 
-  def call(env: Env, args: Seq[SLValue]): Unit = env push f(args)
+  def call(env: Env, args: Seq[SLValue]): Unit =
+    if (f.isDefinedAt(args))
+      env push f(args)
+    else
+      env.problem(s"invalid arguments for function '$name'")
 
   override def toString: String = s"[built-in function: $name]"
 }
