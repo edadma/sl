@@ -46,16 +46,16 @@ object Main extends App {
 //      |
 //      |println('done')
 //      |""".stripMargin
-    """
-      |println(x = y = 123)
-      |println(x, y)
-      |println(++x)
-      |println(x)
-      |println(x, ++x, x)
-      |println(x++)
-      |println(x)
-      |println(x, x++, x)
-      |""".stripMargin
+//    """
+//      |println(x = y = 123)
+//      |println(x, y)
+//      |println(++x)
+//      |println(x)
+//      |println(x, ++x, x)
+//      |println(x++)
+//      |println(x)
+//      |println(x, x++, x)
+//      |""".stripMargin
 //    """
 //      |class c(a)
 //      | x = a + 10
@@ -67,6 +67,9 @@ object Main extends App {
 //      |
 //      |println(o1.x, o1.m(), o2.x, o2.m())
 //      |""".stripMargin
+    """
+      |println([3, 4])
+      |""".stripMargin
 
   val buf = new StringBuilder
 

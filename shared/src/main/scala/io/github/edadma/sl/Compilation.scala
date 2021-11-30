@@ -85,9 +85,11 @@ class Compilation {
         buf += SLString(elem)
         buf += DotInst
       case SeqExpr(elems) =>
+        buf += SLValue.NIL
+
         for (e <- elems.reverse) {
-          buf += SLValue.NIL
           compileExpr(null, e)
+          buf += ListPrependInst
         }
       case BooleanExpr(b) => buf += SLBoolean(b == "true")
       case PrefixExpr("-", pos, expr) =>

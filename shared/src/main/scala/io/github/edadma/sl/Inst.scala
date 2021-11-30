@@ -160,23 +160,15 @@ case object DropInst extends Inst {
 }
 
 case object InstanceInst extends Inst {
-  def execute(env: Env): Unit = {
-    env push Instance(env.act.asInstanceOf[ConstructorActivation])
-  }
+  def execute(env: Env): Unit = env push Instance(env.act.asInstanceOf[ConstructorActivation])
 }
 
 case class FunctionInst(name: String, code: Code, parms: Seq[String]) extends Inst {
-  def execute(env: Env): Unit = {
-
-    env push DefinedFunction(name, code, parms, env.act)
-  }
+  def execute(env: Env): Unit = env push DefinedFunction(name, code, parms, env.act)
 }
 
 case class ClassInst(name: String, code: Code, parms: Seq[String]) extends Inst {
-  def execute(env: Env): Unit = {
-
-    env push DefinedClass(name, code, parms, env.act)
-  }
+  def execute(env: Env): Unit = env push DefinedClass(name, code, parms, env.act)
 }
 
 case object DotInst extends Inst {
@@ -213,7 +205,14 @@ case object LvalueInst extends Inst {
 }
 
 case object RetInst extends Inst {
+  def execute(env: Env): Unit = env.act = env.act.asInstanceOf[FunctionLikeActivation].caller
+}
+
+case object ListPrependInst extends Inst {
   def execute(env: Env): Unit = {
-    env.act = env.act.asInstanceOf[FunctionLikeActivation].caller
+    val item = env.pop.deref
+    val list = env.pop.deref.asInstanceOf[SLList]
+
+    env push SLList(item :: list.l)
   }
 }

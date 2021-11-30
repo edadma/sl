@@ -1,7 +1,7 @@
 package io.github.edadma.sl
 
 import scala.collection.mutable
-import scala.collection.mutable.ArrayBuffer
+import scala.collection.mutable.{ArrayBuffer, ListBuffer}
 import scala.language.postfixOps
 
 trait SLValue extends Inst {
@@ -53,7 +53,7 @@ case class SLNumber(n: Number) extends SLValue {
 case class SLList(l: List[SLValue]) extends SLValue {
   val clas: SLClass = PrimitiveClass.ListClass
 
-  override def toString: String = l.mkString("[", ",", "]")
+  override def toString: String = l.mkString("[", ", ", "]")
 }
 
 case class SLBoolean(b: Boolean) extends SLValue {
@@ -79,7 +79,7 @@ case class SLNativeFunction(name: String, f: PartialFunction[Seq[SLValue], SLVal
     if (f.isDefinedAt(args))
       env push f(args)
     else
-      env.problem(s"invalid arguments for function '$name'")
+      env problem s"invalid arguments for function '$name'"
 
   override def toString: String = s"[built-in function: $name]"
 }
