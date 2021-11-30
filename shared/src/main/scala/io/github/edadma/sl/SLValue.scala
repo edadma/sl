@@ -10,6 +10,18 @@ trait SLValue extends Inst {
   def deref: SLValue = this
 
   def execute(env: Env): Unit = env push this
+
+  def render: String =
+    this match {
+      case SLString(s) => s"${'"'}$s${'"'}"
+      case _           => this.toString
+    }
+
+  override def toString: String =
+    this match {
+      case SLMap(m)  => m.map { case (k, v) => s"${k.render}: ${v.render}" }.mkString("{", ", ", "}")
+      case SLList(l) => l.map(_.render).mkString("[", ", ", "]")
+    }
 }
 
 object SLValue {
@@ -36,6 +48,12 @@ case object SLVoid extends SLValue {
   override def toString: String = "()"
 }
 
+case object SLUndefined extends SLValue {
+  val clas: SLClass = PrimitiveClass.UndefinedClass
+
+  override def toString: String = "[[undefined]]"
+}
+
 case object SLNull extends SLValue {
   val clas: SLClass = PrimitiveClass.NullClass
 
@@ -54,14 +72,10 @@ case class SLNumber(n: Number) extends SLValue {
 
 case class SLList(l: List[SLValue]) extends SLValue {
   val clas: SLClass = PrimitiveClass.ListClass
-
-  override def toString: String = l.mkString("[", ", ", "]")
 }
 
 case class SLMap(m: Map[SLValue, SLValue]) extends SLValue {
   val clas: SLClass = PrimitiveClass.MapClass
-
-  override def toString: String = m.mkString("{", ", ", "}")
 }
 
 case class SLBoolean(b: Boolean) extends SLValue {

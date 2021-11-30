@@ -134,7 +134,7 @@ class SLParser(val input: ParserInput) extends Parser {
       ident ~> SymExpr |
       '\'' ~ capture(zeroOrMore("\\'" | noneOf("'\n"))) ~ '\'' ~ sp ~> StringExpr |
       '"' ~ capture(zeroOrMore("\\\"" | noneOf("\"\n"))) ~ '"' ~ sp ~> StringExpr |
-      "{" ~ zeroOrMore(ident ~ ":" ~ pos ~ expression ~> MapEntry).separatedBy(",") ~ "}" ~> MapExpr |
+      "{" ~ zeroOrMore(expression ~ ":" ~ pos ~ expression ~> MapEntry).separatedBy(",") ~ "}" ~> MapExpr |
       "[" ~ zeroOrMore(expression).separatedBy(",") ~ "]" ~> SeqExpr |
       "(" ~ expression ~ ")"
   }

@@ -45,7 +45,7 @@ case object LtInst extends Inst {
 }
 
 case object EqInst extends Inst {
-  def execute(env: Env): Unit = env pushb (env.popn.doubleValue == env.popn.doubleValue)
+  def execute(env: Env): Unit = env pushb (env.pop.deref == env.pop.deref)
 }
 
 case object ModInst extends Inst {
@@ -176,7 +176,7 @@ case object DotInst extends Inst {
     val elem = env.pops
 
     env.pop.deref match {
-      case Instance(con) => env push (con.locals getOrElse (elem, SLVoid))
+      case Instance(con) => env push (con.locals getOrElse (elem, SLUndefined))
     }
   }
 }
@@ -214,5 +214,15 @@ case object ListPrependInst extends Inst {
     val list = env.pop.deref.asInstanceOf[SLList]
 
     env push SLList(item :: list.l)
+  }
+}
+
+case object MapInsertInst extends Inst {
+  def execute(env: Env): Unit = {
+    val value = env.pop.deref
+    val key = env.pop.deref
+    val map = env.pop.deref.asInstanceOf[SLMap]
+
+    env push SLMap(map.m.updated(key, value))
   }
 }

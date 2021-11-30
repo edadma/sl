@@ -48,9 +48,9 @@ case object VoidExpr extends ExprAST
 
 case class SymExpr(ident: Ident) extends ExprAST
 
-case class MapEntry(key: Ident, pos: Cursor, value: ExprAST)
+case class MapEntry(key: ExprAST, pos: Cursor, value: ExprAST)
 
-case class MapExpr(pairs: Seq[MapEntry]) extends ExprAST
+case class MapExpr(entries: Seq[MapEntry]) extends ExprAST
 
 case class SeqExpr(elems: Seq[ExprAST]) extends ExprAST
 

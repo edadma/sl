@@ -79,6 +79,25 @@ class Compilation {
       buf += PosInst(pos)
 
     expr match {
+      case MapExpr(entries) =>
+        buf += SLValue.EMPTY
+
+        val keys = new mutable.HashSet[String]
+
+        entries foreach {
+          case MapEntry(SymExpr(Ident(kpos, name)), pos, value) =>
+            if (keys contains name)
+              problem(kpos, s"duplicate map key: $name")
+
+            keys += name
+            buf += SLString(name)
+            compileExpr(pos, value)
+            buf += MapInsertInst
+          case MapEntry(key, pos, value) =>
+            compileExpr(null, key)
+            compileExpr(pos, value)
+            buf += MapInsertInst
+        }
       case DotExpr(pos, expr, Ident(epos, elem)) =>
         compileExpr(pos, expr)
         buf += PosInst(epos)
