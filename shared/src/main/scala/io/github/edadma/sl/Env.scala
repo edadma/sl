@@ -83,6 +83,6 @@ class ModuleEnv(code: Code) extends Env {
 
   def symbol(name: String): SLValue = act.symbol(name) getOrElse problem(s"symbol not found: $name")
 
-  def lvalue(name: String): SLValue = act.lvalue(name)
+  def lvalue(name: String): SLValue = act.symbol(name) getOrElse act.define(name, new VarMutable(SLNull))
 
 }
