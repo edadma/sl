@@ -226,3 +226,24 @@ case object MapInsertInst extends Inst {
     env push SLMap(map.m.updated(key, value))
   }
 }
+
+case object StringBuilderInst extends Inst {
+  def execute(env: Env): Unit = env push new SLStringBuilder
+}
+
+case object AppendInst extends Inst {
+  def execute(env: Env): Unit = {
+    val s = env.pops
+    val builder = env.top.asInstanceOf[SLStringBuilder].builder
+
+    builder ++= s
+  }
+}
+
+case object StringFromBuilderInst extends Inst {
+  def execute(env: Env): Unit = {
+    val builder = env.pop.asInstanceOf[SLStringBuilder].builder
+
+    env push SLString(builder.toString)
+  }
+}

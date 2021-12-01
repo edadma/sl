@@ -69,7 +69,12 @@ object Main extends App {
 //      |""".stripMargin
     """
       |x = 5
-      |println(`x = $x`)
+      |
+      |def f(x) = x + 3
+      |
+      |println(f(4))
+      |
+      |println(`x = $x and f(4) = ${f(4)}`)
       |""".stripMargin
 
   val buf = new StringBuilder

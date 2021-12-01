@@ -79,7 +79,15 @@ class Compilation {
       buf += PosInst(pos)
 
     expr match {
-      case InterpolatedStringExpr(s) =>
+      case InterpolatedStringExpr(exprs) =>
+        buf += StringBuilderInst
+
+        for (int <- exprs) {
+          compileExpr(null, int)
+          buf += AppendInst
+        }
+
+        buf += StringFromBuilderInst
       case MapExpr(entries) =>
         buf += SLValue.EMPTY
 

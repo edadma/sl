@@ -90,6 +90,12 @@ case class SLString(s: String) extends SLValue {
   override def toString: String = s
 }
 
+case class SLStringBuilder(builder: StringBuilder = new StringBuilder) extends SLValue {
+  val clas: SLClass = PrimitiveClass.StringBuilderClass
+
+  override def toString: String = builder.toString
+}
+
 trait Callable {
   def call(env: Env, args: Seq[SLValue]): Unit
 }

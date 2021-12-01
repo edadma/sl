@@ -129,13 +129,21 @@ class SLParser(val input: ParserInput) extends Parser {
       "null" ~ push(NullExpr) |
       "()" ~ push(VoidExpr) |
       ident ~> SymExpr |
-      '`' ~ capture(zeroOrMore("\\`" | noneOf("`"))) ~ '`' ~ sp ~> InterpolatedStringExpr |
-      '\'' ~ capture(zeroOrMore("\\'" | noneOf("'\n"))) ~ '\'' ~ sp ~> StringExpr |
-      '"' ~ capture(zeroOrMore("\\\"" | noneOf("\"\n"))) ~ '"' ~ sp ~> StringExpr |
+      '`' ~ zeroOrMore(interpolator) ~ '`' ~ sp ~> InterpolatedStringExpr |
+      '\'' ~ capture(zeroOrMore('\\' ~ '\'' | noneOf("'\n"))) ~ '\'' ~ sp ~> StringExpr |
+      '"' ~ capture(zeroOrMore('\\' ~ '"' | noneOf("\"\n"))) ~ '"' ~ sp ~> StringExpr |
       "{" ~ zeroOrMore(expression ~ ":" ~ pos ~ expression ~> MapEntry).separatedBy(",") ~ "}" ~> MapExpr |
       "[" ~ zeroOrMore(expression).separatedBy(",") ~ "]" ~> SeqExpr |
       "(" ~ expression ~ ")"
   }
+
+  def interpolator: Rule1[ExprAST] =
+    rule {
+      '$' ~ '$' ~ push(StringExpr("$")) |
+        '$' ~ identnsp ~> SymExpr |
+        '$' ~ '{' ~ expression ~ '}' |
+        capture(oneOrMore(noneOf("`$"))) ~> StringExpr
+    }
 
   def digits: Rule0 = rule(oneOrMore(CharPredicate.Digit))
 
@@ -145,10 +153,12 @@ class SLParser(val input: ParserInput) extends Parser {
 
   // todo: code more efficient way of checking if an ident is a keyword
 
-  def ident: Rule1[Ident] =
+  def identnsp: Rule1[Ident] =
     rule {
-      pos ~ /*!keyword ~*/ capture((CharPredicate.Alpha | '_') ~ zeroOrMore(CharPredicate.AlphaNum | '_')) ~ sp ~> Ident
+      pos ~ !keyword ~ capture((CharPredicate.Alpha | '_') ~ zeroOrMore(CharPredicate.AlphaNum | '_')) ~> Ident
     }
+
+  def ident: Rule1[Ident] = rule(identnsp ~ sp)
 
   def parseSources: SourcesAST =
     sources.run() match {
