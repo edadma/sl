@@ -140,8 +140,8 @@ class SLParser(val input: ParserInput) extends Parser {
   def interpolator: Rule1[ExprAST] =
     rule {
       '$' ~ '$' ~ push(StringExpr("$")) |
-        '$' ~ identnsp ~> SymExpr |
         '$' ~ '{' ~ expression ~ '}' |
+        '$' ~ identnsp ~> SymExpr |
         capture(oneOrMore(noneOf("`$"))) ~> StringExpr
     }
 
