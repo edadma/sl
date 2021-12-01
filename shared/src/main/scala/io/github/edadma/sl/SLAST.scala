@@ -22,13 +22,15 @@ case class ValStat(ident: Ident, init: ExprAST, var initialized: Boolean = false
 
 case class ExpressionStat(expr: ExprAST) extends StatAST
 
+case class BreakStat(label: Option[Ident], expr: Option[ExprAST]) extends StatAST
+
+case class ContinueStat(label: Option[Ident]) extends StatAST
+
+case class LabelStat(label: Ident) extends StatAST
+
 trait ExprAST extends SLAST
 
 case class FunctionExpr(params: Seq[Ident], pos: Cursor, body: ExprAST) extends StatAST with ExprAST
-
-case class BreakExpr(label: Option[Ident], expr: Option[ExprAST]) extends ExprAST
-
-case class ContinueExpr(label: Option[Ident]) extends ExprAST
 
 case class BlockExpr(stats: Seq[StatAST]) extends ExprAST
 

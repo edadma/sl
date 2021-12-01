@@ -35,13 +35,6 @@ class SLParser(val input: ParserInput) extends Parser {
 
   def statements: Rule1[Seq[StatAST]] = rule(zeroOrMore(statement ~ nls))
 
-  def classStatement: Rule1[ClassStat] = rule("class" ~ ident ~ parameters ~ block ~> ClassStat)
-
-  def varStatement: Rule1[VarStat] = rule("var" ~ ident ~ optional("=" ~ expressionOrBlock) ~> VarStat)
-
-  def defStatement: Rule1[DefStat] =
-    rule("def" ~ ident ~ parameters ~ ("=" ~ expression | optional("=") ~ blockExpression) ~> DefStat)
-
   def parameters: Rule1[Seq[Ident]] = rule("(" ~ zeroOrMore(ident).separatedBy(",") ~ ")" | push(Nil))
 
   def block: Rule1[Seq[StatAST]] = rule(ch('\n') ~ '\ue000' ~ oneOrMore(statement ~ nls) ~ '\ue001')
@@ -50,7 +43,13 @@ class SLParser(val input: ParserInput) extends Parser {
 
   def statement: Rule1[StatAST] =
     rule {
-      classStatement | varStatement | defStatement | expression ~> ExpressionStat
+      ident ~ ":" ~> LabelStat |
+        "class" ~ ident ~ parameters ~ block ~> ClassStat |
+        "var" ~ ident ~ optional("=" ~ expressionOrBlock) ~> VarStat |
+        "def" ~ ident ~ parameters ~ ("=" ~ expression | optional("=") ~ blockExpression) ~> DefStat |
+        "break" ~ optional(ident) ~ optional("(" ~ expression ~ ")") ~> BreakStat |
+        "continue" ~ optional(ident) ~> ContinueStat |
+        expression ~> ExpressionStat
     }
 
   def expression: Rule1[ExprAST] = rule(function)
@@ -70,8 +69,6 @@ class SLParser(val input: ParserInput) extends Parser {
     rule {
       "if" ~ pos ~ condition ~ ("then" ~ expression | optional("then") ~ blockExpression) ~ optElse ~> ConditionalExpr |
         "while" ~ pos ~ condition ~ ("do" ~ expression | optional("do") ~ blockExpression) ~ optElse ~> WhileExpr |
-        "break" ~ optional(ident) ~ optional(condition) ~> BreakExpr |
-        "continue" ~ optional(ident) ~> ContinueExpr |
         condition
     }
 
