@@ -68,7 +68,8 @@ object Main extends App {
 //      |println(o1.x, o1.m(), o2.x, o2.m())
 //      |""".stripMargin
     """
-      |println({"a": 3} == {a: 3})
+      |x = 5
+      |println(`x = $x`)
       |""".stripMargin
 
   val buf = new StringBuilder

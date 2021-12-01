@@ -79,6 +79,7 @@ class Compilation {
       buf += PosInst(pos)
 
     expr match {
+      case InterpolatedStringExpr(s) =>
       case MapExpr(entries) =>
         buf += SLValue.EMPTY
 

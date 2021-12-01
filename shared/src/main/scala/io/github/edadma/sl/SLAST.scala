@@ -36,6 +36,8 @@ case class BlockExpr(stats: Seq[StatAST]) extends ExprAST
 
 case class InfixExpr(left: ExprAST, op: String, right: ExprAST) extends ExprAST
 
+case class InterpolatedStringExpr(s: String) extends ExprAST
+
 case class StringExpr(s: String) extends ExprAST
 
 case class IntegerExpr(n: String) extends ExprAST

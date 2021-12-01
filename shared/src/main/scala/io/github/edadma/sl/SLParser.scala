@@ -129,6 +129,7 @@ class SLParser(val input: ParserInput) extends Parser {
       "null" ~ push(NullExpr) |
       "()" ~ push(VoidExpr) |
       ident ~> SymExpr |
+      '`' ~ capture(zeroOrMore("\\`" | noneOf("`"))) ~ '`' ~ sp ~> InterpolatedStringExpr |
       '\'' ~ capture(zeroOrMore("\\'" | noneOf("'\n"))) ~ '\'' ~ sp ~> StringExpr |
       '"' ~ capture(zeroOrMore("\\\"" | noneOf("\"\n"))) ~ '"' ~ sp ~> StringExpr |
       "{" ~ zeroOrMore(expression ~ ":" ~ pos ~ expression ~> MapEntry).separatedBy(",") ~ "}" ~> MapExpr |
