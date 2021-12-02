@@ -78,7 +78,8 @@ case class DotExpr(pos: Cursor, expr: ExprAST, elem: Ident) extends ExprAST
 
 case class ConditionalExpr(pos: Cursor, cond: ExprAST, yes: ExprAST, no: Option[ExprAST]) extends ExprAST
 
-case class WhileExpr(pos: Cursor, cond: ExprAST, body: ExprAST, no: Option[ExprAST]) extends ExprAST
+case class WhileExpr(label: Option[Ident], pos: Cursor, cond: ExprAST, body: ExprAST, no: Option[ExprAST])
+    extends ExprAST
 
 case class OrExpr(left: ExprAST, right: ExprAST) extends ExprAST
 

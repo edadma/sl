@@ -43,8 +43,7 @@ class SLParser(val input: ParserInput) extends Parser {
 
   def statement: Rule1[StatAST] =
     rule {
-      ident ~ ":" ~> LabelStat |
-        "class" ~ ident ~ parameters ~ block ~> ClassStat |
+      "class" ~ ident ~ parameters ~ block ~> ClassStat |
         "var" ~ ident ~ optional("=" ~ expressionOrBlock) ~> VarStat |
         "def" ~ ident ~ parameters ~ ("=" ~ expression | optional("=") ~ blockExpression) ~> DefStat |
         "break" ~ optional(ident) ~ optional("(" ~ expression ~ ")") ~> BreakStat |
@@ -68,7 +67,7 @@ class SLParser(val input: ParserInput) extends Parser {
   def construct: Rule1[ExprAST] =
     rule {
       "if" ~ pos ~ condition ~ ("then" ~ expression | optional("then") ~ blockExpression) ~ optElse ~> ConditionalExpr |
-        "while" ~ pos ~ condition ~ ("do" ~ expression | optional("do") ~ blockExpression) ~ optElse ~> WhileExpr |
+        optional(ident ~ ":") ~ "while" ~ pos ~ condition ~ ("do" ~ expression | optional("do") ~ blockExpression) ~ optElse ~> WhileExpr |
         condition
     }
 
