@@ -46,8 +46,6 @@ class SLParser(val input: ParserInput) extends Parser {
       "class" ~ ident ~ parameters ~ block ~> ClassStat |
         "var" ~ ident ~ optional("=" ~ expressionOrBlock) ~> VarStat |
         "def" ~ ident ~ parameters ~ ("=" ~ expression | optional("=") ~ blockExpression) ~> DefStat |
-        "break" ~ optional(ident) ~ optional("(" ~ expression ~ ")") ~> BreakStat |
-        "continue" ~ optional(ident) ~> ContinueStat |
         expression ~> ExpressionStat
     }
 
@@ -68,6 +66,8 @@ class SLParser(val input: ParserInput) extends Parser {
     rule {
       "if" ~ pos ~ condition ~ ("then" ~ expression | optional("then") ~ blockExpression) ~ optElse ~> ConditionalExpr |
         optional(ident ~ ":") ~ "while" ~ pos ~ condition ~ ("do" ~ expression | optional("do") ~ blockExpression) ~ optElse ~> WhileExpr |
+        pos ~ "break" ~ optional(ident) ~ optional("(" ~ expression ~ ")") ~> BreakExpr |
+        pos ~ "continue" ~ optional(ident) ~> ContinueExpr |
         condition
     }
 

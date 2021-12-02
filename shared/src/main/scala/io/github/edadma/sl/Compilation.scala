@@ -11,6 +11,27 @@ class Compilation {
   case object BranchTrue extends BooleanCompilation
 
   protected val buf: ArrayBuffer[Inst] = new ArrayBuffer
+  protected val loops = new mutable.Stack[Loop]
+
+  protected class Loop {
+    val start: Int = buf.length
+    val breaks = new ListBuffer[Int]
+
+    def addBreak(): Unit = {
+      breaks += buf.length
+      buf += null
+      buf += BranchInst
+    }
+
+    def patchBreaks(): Unit = breaks foreach patch
+  }
+
+  def patch(fixup: Int): Unit = buf(fixup) = SLInteger(buf.length - fixup - 2)
+
+  def loop(start: Int): Unit = {
+    buf += SLInteger(-(buf.length - start) - 2)
+    buf += BranchInst
+  }
 
   def code: Code = new Code(buf)
 
@@ -68,17 +89,15 @@ class Compilation {
       len
     }
 
-    def patch(fixup: Int): Unit = buf(fixup) = SLInteger(buf.length - fixup - 2)
-
-    def loop(start: Int): Unit = {
-      buf += SLInteger(-(buf.length - start) - 2)
-      buf += BranchInst
-    }
-
     if (pos ne null)
       buf += PosInst(pos)
 
     expr match {
+      case BreakExpr(pos, label, expr) =>
+        if (loops.isEmpty)
+          problem(pos, "break not inside a loop construct")
+
+        loops.top.addBreak()
       case InterpolatedStringExpr(exprs) =>
         buf += StringBuilderInst
 
@@ -226,9 +245,10 @@ class Compilation {
         for (a <- calls.tail) {
           generateCall(a)
         }
-      case WhileExpr(pos, cond, body, no) =>
+      case WhileExpr(label, pos, cond, body, no) =>
         val start = buf.length
 
+        loops push new Loop
         compileExpr(pos, cond)
 
         val exit = forward(BranchIfFalseInst)
@@ -240,8 +260,10 @@ class Compilation {
 
         if (no.isDefined)
           compileExpr(null, no.get)
-        else
+        else {
+          loops.top.patchBreaks()
           buf += SLVoid
+        }
       case ConditionalExpr(pos, cond, yes, no) =>
         compileExpr(pos, cond)
 
