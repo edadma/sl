@@ -67,24 +67,24 @@ object Main extends App {
 //      |
 //      |println(o1.x, o1.m(), o2.x, o2.m())
 //      |""".stripMargin
-//    """
-//      |x = 5
-//      |
-//      |def f(x) = x + 3
-//      |
-//      |println(f(4))
-//      |
-//      |println(`x = $x and f(4) = ${f(4)}`)
-//      |""".stripMargin
     """
-      |var x = 1
+      |x = 5
       |
-      |while true
-      | println(x)
-      | if x++ == 3 then break
+      |def f(x) = x + 3
       |
-      |println('done')
+      |println(f(4))
+      |
+      |println(`x = $x and f(4) = ${f(4)}`)
       |""".stripMargin
+//    """
+//      |var x = 1
+//      |
+//      |while true
+//      | println(x)
+//      | if x++ == 3 then break
+//      |
+//      |println('done')
+//      |""".stripMargin
 
   val buf = new StringBuilder
 
