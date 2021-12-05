@@ -1,176 +1,180 @@
-package io.github.edadma.sl
+package io.github.edadma.fastparse
 
-import scala.util.{Failure, Success}
-import org.parboiled2._
+import fastparse._
+import pprint._
 
-import scala.language.implicitConversions
+import scala.annotation.{switch, tailrec}
 
-class SLParser(val input: ParserInput) extends Parser {
+object Main extends App {
 
-  private val delimiters = "[](){}`'\","
-  private val delimiter = CharPredicate(delimiters)
+  implicit val whitespace = { implicit ctx: ParsingRun[_] =>
+    val input = ctx.input
+    val startIndex = ctx.index
 
-  implicit def wsStr(s: String): Rule0 =
-    if (delimiters.exists(_.toString == s))
-      rule(str(s) ~ sp)
-    else if (s.forall(!_.isLetterOrDigit))
-      rule(str(s) ~ !(CharPredicate.Visible -- CharPredicate.AlphaNum -- delimiter) ~ sp)
-    else
-      rule(str(s) ~ !CharPredicate.AlphaNum ~ sp)
+    @tailrec def rec(current: Int, state: Int): ParsingRun[Unit] = {
+      if (!input.isReachable(current)) {
+        if (state == 0 || state == 1) ctx.freshSuccessUnit(current)
+        else if (state == 2) ctx.freshSuccessUnit(current - 1)
+        else {
+          ctx.cut = true
+          val res = ctx.freshFailure(current)
+          if (ctx.verboseFailures) ctx.setMsg(startIndex, () => Util.literalize("*/"))
+          res
+        }
+      } else {
+        val currentChar = input(current)
 
-  def pos: Rule1[Cursor] = rule(push(new Cursor(cursor)))
-
-  def sp: Rule0 = rule(quiet(zeroOrMore(anyOf(" \t") | '/' ~ '/' ~ zeroOrMore(noneOf("\n\r")))))
-
-  def nl: Rule0 = rule(oneOrMore(anyOf("\r\n")))
-
-  def nls: Rule0 = rule(zeroOrMore(anyOf("\r\n") ~ sp) ~ sp)
-
-  def kw(s: String): Rule1[String] =
-    rule(capture(str(s) ~ !CharPredicate.AlphaNum ~ sp) ~> ((s: String) => s.trim))
-
-  def sym(s: String): Rule1[String] = rule(capture(s) ~> ((s: String) => s.trim))
-
-  def sources: Rule1[SourcesAST] = rule(nls ~ statements ~ EOI ~> SourcesAST)
-
-  def statements: Rule1[Seq[StatAST]] = rule(zeroOrMore(statement ~ nls))
-
-  def parameters: Rule1[Seq[Ident]] = rule("(" ~ zeroOrMore(ident).separatedBy(",") ~ ")" | push(Nil))
-
-  def block: Rule1[Seq[StatAST]] = rule(ch('\n') ~ '\ue000' ~ oneOrMore(statement ~ nls) ~ '\ue001')
-
-  def blockExpression: Rule1[ExprAST] = rule(block ~> BlockExpr)
-
-  def statement: Rule1[StatAST] =
-    rule {
-      "class" ~ ident ~ parameters ~ block ~> ClassStat |
-        "var" ~ ident ~ optional("=" ~ expressionOrBlock) ~> VarStat |
-        "def" ~ ident ~ parameters ~ ("=" ~ expression | optional("=") ~ blockExpression) ~> DefStat |
-        expression ~> ExpressionStat
+        (state: @switch) match {
+          case 0 =>
+            (currentChar: @switch) match {
+              case ' ' | '\t' => rec(current + 1, state)
+              case '/'        => rec(current + 1, state = 2)
+              case _          => ctx.freshSuccessUnit(current)
+            }
+          case 1 =>
+            if (currentChar == '\n')
+              ctx.freshSuccessUnit(current)
+            else
+              rec(current + 1, 1)
+          case 2 =>
+            (currentChar: @switch) match {
+              case '/' => rec(current + 1, state = 1)
+              case '*' => rec(current + 1, state = 3)
+              case _   => ctx.freshSuccessUnit(current - 1)
+            }
+          case 3 => rec(current + 1, state = if (currentChar == '*') 4 else state)
+          case 4 =>
+            (currentChar: @switch) match {
+              case '/' => rec(current + 1, state = 0)
+              case '*' => rec(current + 1, state = 4)
+              case _   => rec(current + 1, state = 3)
+            }
+        }
+      }
     }
 
-  def expression: Rule1[ExprAST] = rule(function)
-
-  def functionParameters: Rule1[Seq[Ident]] =
-    rule(ident ~> (id => Seq(id)) | "(" ~ zeroOrMore(ident).separatedBy(",") ~ ")")
-
-  def function: Rule1[ExprAST] = rule(functionParameters ~ "->" ~ pos ~ expressionOrBlock ~> FunctionExpr | assignment)
-
-  def assignment: Rule1[ExprAST] = rule(pos ~ applicative ~ "=" ~ pos ~ expressionOrBlock ~> AssignExpr | construct)
-
-  def expressionOrBlock: Rule1[ExprAST] = rule(expression | blockExpression)
-
-  def optElse: Rule1[Option[ExprAST]] = rule(optional(nls ~ "else" ~ expressionOrBlock))
-
-  def construct: Rule1[ExprAST] =
-    rule {
-      "if" ~ pos ~ condition ~ ("then" ~ expression | optional("then") ~ blockExpression) ~ optElse ~> ConditionalExpr |
-        optional(ident ~ ":") ~ "while" ~ pos ~ condition ~ ("do" ~ expression | optional("do") ~ blockExpression) ~ optElse ~> WhileExpr |
-        pos ~ "break" ~ optional(ident) ~ optional("(" ~ expression ~ ")") ~> BreakExpr |
-        pos ~ "continue" ~ optional(ident) ~> ContinueExpr |
-        condition
-    }
-
-  def condition: Rule1[ExprAST] = disjunctive
-
-  def disjunctive: Rule1[ExprAST] = rule(conjunctive ~ zeroOrMore("or" ~ conjunctive ~> OrExpr))
-
-  def conjunctive: Rule1[ExprAST] = rule(not ~ zeroOrMore("and" ~ not ~> AndExpr))
-
-  def not: Rule1[ExprAST] =
-    rule {
-      kw("not") ~ pos ~ not ~> PrefixExpr |
-        comparitive
-    }
-
-  def comparitive: Rule1[ExprAST] =
-    rule {
-      pos ~ additive ~ oneOrMore(
-        (sym("<=") | sym(">=") | sym("!=") | sym("<") | sym(">") | sym("==") | kw("div")) ~ pos ~ additive ~> RightOper) ~> CompareExpr | additive
-    }
-
-  def additive: Rule1[ExprAST] =
-    rule {
-      pos ~ multiplicative ~ oneOrMore((sym("+") | sym("-")) ~ pos ~ multiplicative ~> RightOper) ~> LeftInfixExpr | multiplicative
-    }
-
-  def multiplicative: Rule1[ExprAST] =
-    rule {
-      pos ~ negative ~ oneOrMore(
-        (sym("*") | sym("/") | kw("mod") | sym("\\")) ~
-          pos ~ negative ~> RightOper) ~> LeftInfixExpr | negative
-    }
-
-  def negative: Rule1[ExprAST] = rule(sym("-") ~ pos ~ negative ~> PrefixExpr | power)
-
-  def power: Rule1[ExprAST] = rule(pos ~ incdec ~ sym("^") ~ pos ~ power ~> RightInfixExpr | incdec)
-
-  def incdec: Rule1[ExprAST] =
-    rule {
-      (sym("++") | sym("--")) ~ pos ~ applicative ~> PrefixExpr |
-        pos ~ applicative ~ (sym("++") | sym("--")) ~> PostfixExpr |
-        applicative
-    }
-
-  def applicative: Rule1[ExprAST] =
-    rule(
-      pos ~ dot ~ oneOrMore(pos ~ "(" ~ zeroOrMore(pos ~ expression ~> Arg).separatedBy(",") ~ ")" ~> Args) ~> ApplyExpr | dot)
-
-  def dot: Rule1[ExprAST] = rule(pos ~ primary ~ "." ~ ident ~> DotExpr | primary)
-
-  def primary: Rule1[ExprAST] = rule {
-    (kw("true") | kw("false")) ~> BooleanExpr |
-      capture(
-        (zeroOrMore(CharPredicate.Digit) ~ '.' ~ digits | digits ~ '.') ~
-          optional((ch('e') | 'E') ~ optional(ch('+') | '-') ~ digits)
-      ) ~ sp ~> DecimalExpr |
-      capture(digits) ~ sp ~> IntegerExpr |
-      "null" ~ push(NullExpr) |
-      "()" ~ push(VoidExpr) |
-      ident ~> SymExpr |
-      '`' ~!~ zeroOrMore(interpolator) ~!~ '`' ~ sp ~> InterpolatedStringExpr |
-      '\'' ~ capture(zeroOrMore('\\' ~ '\'' | noneOf("'\n"))) ~ '\'' ~ sp ~> StringExpr |
-      '"' ~ capture(zeroOrMore('\\' ~ '"' | noneOf("\"\n"))) ~ '"' ~ sp ~> StringExpr |
-      "{" ~ zeroOrMore(expression ~ ":" ~ pos ~ expression ~> MapEntry).separatedBy(",") ~ "}" ~> MapExpr |
-      "[" ~ zeroOrMore(expression).separatedBy(",") ~ "]" ~> SeqExpr |
-      "(" ~ expression ~ ")"
+    rec(current = ctx.index, state = 0)
   }
 
-  def interpolator: Rule1[ExprAST] =
-    rule {
-      '$' ~ '$' ~!~ push(StringExpr("$")) |
-        '$' ~ '{' ~!~ expression ~ '}' |
-        '$' ~!~ identnsp ~> SymExpr |
-        capture(oneOrMore(noneOf("`$"))) ~> StringExpr
+  def nl[_: P]: P[Unit] = P("\n")
+
+  def module[_: P]: P[ModuleAST] =
+    P(Start ~ statement.?.rep(sep = nl).map(_.filter(_.isDefined).map(_.get)).map(ModuleAST) ~ End)
+
+  def statement[_: P]: P[StatAST] = new Parser(indent = 0).statement
+
+  class Parser(indent: Int) {
+    def statement[_: P]: P[StatAST] =
+      P(
+        "var" ~ (ident ~ ("=" ~ expressionOrBlock).?).map(VarStat.tupled) |
+          expression.map(ExpressionStat)
+      )
+
+    def k[_: P](s: String): P[Unit] = P(s ~~ !CharPred(_.isLetterOrDigit))
+
+    def deeper[_: P]: P[Int] = P(" ".repX(indent + 1).!.map(_.length)).log
+
+    def block[_: P]: P[Seq[StatAST]] =
+      P(
+        "\n" ~~ deeper
+          .flatMapX(i => new Parser(indent = i).statement.?.rep(1, sep = ("\n" + " " * i)./))
+          .map(_.filter(_.isDefined).map(_.get)))
+
+    def blockExpression[_: P]: P[ExprAST] = P(block map BlockExpr)
+
+    def expressionOrBlock[_: P]: P[ExprAST] = P(expression | blockExpression)
+
+    def keyword[_: P]: P[Unit] =
+      StringIn(
+        "div",
+        "and",
+        "or",
+        "not",
+        "break",
+        "continue",
+        "var",
+        "val",
+        "def",
+        "mod",
+        "if",
+        "then",
+        "true",
+        "false",
+        "null",
+        "else",
+        "elsif",
+        "with",
+        "extends",
+        "class",
+        "module",
+        "match",
+        "case",
+        "for",
+        "do",
+        "while"
+      ) ~ (!CharPred(_.isLetterOrDigit) | End)
+
+    def ident[_: P]: P[Ident] =
+      P((!keyword ~ Index ~ (CharIn("a-zA-Z_") ~~ CharIn("a-zA-Z0-9_").repX).!).map(Ident.tupled))
+
+    def leftInfix(tree: (Int, ExprAST, Seq[(String, Int, ExprAST)])): ExprAST = {
+      val (lpos, base, ops) = tree
+
+      val (_, res) =
+        ops.foldLeft((lpos, base)) {
+          case ((lp, left), (op, rp, right)) => (lp, InfixExpr(lp, left, op, rp, right))
+        }
+
+      res
     }
 
-  def digits: Rule0 = rule(oneOrMore(CharPredicate.Digit))
+    def number[_: P]: P[ExprAST] = P(CharIn("0-9").repX(1).!.map(IntegerExpr))
 
-  def keyword: Rule0 =
-    rule(
-      "div" | "and" | "or" | "not" | "break" | "continue" | "var" | "val" | "def" | "mod" | "if" | "then" | "true" | "false" | "null" | "else" | "elsif" | "with" | "extends" | "class" | "module" | "match" | "case" | "for" | "do" | "while")
+    def parens[_: P]: P[ExprAST] = P("(" ~/ comparitive ~ ")")
 
-  // todo: code more efficient way of checking if an ident is a keyword
+    def variable[_: P]: P[ExprAST] = P(ident map SymExpr)
 
-  def identnsp: Rule1[Ident] =
-    rule {
-      pos ~ !keyword ~ capture((CharPredicate.Alpha | '_') ~ zeroOrMore(CharPredicate.AlphaNum | '_')) ~> Ident
-    }
+    def factor[_: P]: P[ExprAST] = P(variable | number | parens)
 
-  def ident: Rule1[Ident] = rule(identnsp ~ sp)
+    def comparitive[_: P]: P[ExprAST] =
+      P(
+        (Index ~ NoCut(additive) ~ (StringIn("<=", ">=", "!=", "<", ">", "==", "div").! ~/ Index ~ additive)
+          .map(Predicate.tupled)
+          .rep(1))
+          .map(CompareExpr.tupled) | additive
+      )
 
-  def parseSources: SourcesAST =
-    sources.run() match {
-      case Success(ast)           => ast
-      case Failure(e: ParseError) => sys.error("parse error: " + formatError(e))
-      case Failure(e)             => sys.error("Unexpected error during parsing run: " + e)
-    }
+    def multiplicative[_: P]: P[ExprAST] =
+      P(Index ~ factor ~ (StringIn("*", "/").! ~/ Index ~ factor).rep).map(leftInfix)
 
-  def parseExpression: ExprAST =
-    expression.run() match {
-      case Success(ast)           => ast
-      case Failure(e: ParseError) => sys.error("Expression is not valid: " + formatError(e))
-      case Failure(e)             => sys.error("Unexpected error during parsing run: " + e)
-    }
+    def additive[_: P]: P[ExprAST] =
+      P(Index ~ multiplicative ~ (StringIn("+", "-").! ~/ Index ~ multiplicative).rep).map(leftInfix)
+
+    def expression[_: P]: P[ExprAST] = P(comparitive)
+  }
+
+  val input = {
+    """
+      |// asdf
+      |var x =
+      | 3+4 // asdf
+      | var y =
+      |  A
+      |  // asdf
+      |  B
+      | 5+6
+      |
+      |123 //asdf
+      |
+      |// asdf
+      |""".stripMargin
+  }
+
+  parse(input, module(_)) match {
+    case Parsed.Success(value, index) => pprintln(value)
+    case f: Parsed.Failure =>
+      println(f)
+      println(f.extra.trace())
+  }
 
 }

@@ -1,6 +1,6 @@
 package io.github.edadma.sl
 
-import io.github.edadma.char_reader.CharReader
+//import io.github.edadma.char_reader.CharReader
 
 import scala.annotation.tailrec
 
@@ -67,15 +67,15 @@ object Main extends App {
 //      |
 //      |println(o1.x, o1.m(), o2.x, o2.m())
 //      |""".stripMargin
-    """
-      |x = 5
-      |
-      |def f(x) = x + 3
-      |
-      |println(f(4))
-      |
-      |println(`x = $x and f(4) = ${f(4)}`)
-      |""".stripMargin
+//    """
+//      |x = 5
+//      |
+//      |def f(x) = x + 3
+//      |
+//      |println(f(4))
+//      |
+//      |println(`x = $x and f(4) = ${f(4)}`)
+//      |""".stripMargin
 //    """
 //      |var x = 1
 //      |
@@ -85,33 +85,36 @@ object Main extends App {
 //      |
 //      |println('done')
 //      |""".stripMargin
+    """
+      |3 + 4
+      |""".stripMargin
 
-  val buf = new StringBuilder
-
-  @tailrec
-  def readch(r: CharReader): Unit =
-    if (r.more) {
-      buf +=
-        (r.ch match {
-          case c => c
-        })
-      readch(r.next)
-    }
-
-  readch(CharReader.fromString(input, indentation = Some(("//", "/*", "*/"))))
-
-  val p = new SLParser(buf.toString)
-  val t = p.parseSources
+//  val buf = new StringBuilder
+//
+//  @tailrec
+//  def readch(r: CharReader): Unit =
+//    if (r.more) {
+//      buf +=
+//        (r.ch match {
+//          case c => c
+//        })
+//      readch(r.next)
+//    }
+//
+//  readch(CharReader.fromString(input, indentation = Some(("//", "/*", "*/"))))
+//
+//  val p = new SLParser(buf.toString)
+//  val t = p.parseSources
 
 //  pprintln(t)
 
-  val c = Compilation(t)
+//  val c = Compilation(t)
 
 //  c.listing()
 
-  val e = new ModuleEnv(c)
+//  val e = new ModuleEnv(c)
 
 //  e.trace = true
-  e.run()
+//  e.run()
 
 }
