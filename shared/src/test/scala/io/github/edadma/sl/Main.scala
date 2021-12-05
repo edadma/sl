@@ -96,20 +96,6 @@ object Main extends App {
       |println(s)
       |""".stripMargin
 
-//  val buf = new StringBuilder
-//
-//  @tailrec
-//  def readch(r: CharReader): Unit =
-//    if (r.more) {
-//      buf +=
-//        (r.ch match {
-//          case c => c
-//        })
-//      readch(r.next)
-//    }
-//
-//  readch(CharReader.fromString(input, indentation = Some(("//", "/*", "*/"))))
-
   parse(input, SLParser.module(_)) match {
     case Parsed.Success(t, index) =>
       pprintln(t)
@@ -126,10 +112,5 @@ object Main extends App {
       println(f)
       println(f.extra.trace())
   }
-
-//  val p = new SLParser(buf.toString)
-//  val t = p.parseSources
-
-//  pprintln(t)
 
 }

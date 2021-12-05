@@ -98,6 +98,19 @@ object SLParser {
 
     def expressionOrBlock[_: P]: P[ExprAST] = P(expression | blockExpression)
 
+    def optElse[_: P]: P[Option[ExprAST]] = P((nl.? ~ "else" ~ expressionOrBlock).?)
+
+    def construct[_: P]: P[ExprAST] =
+      P(
+        "if" ~ Index ~ condition ~ ("then" ~ expression | "then".? ~ blockExpression) ~ optElse ~> ConditionalExpr |
+          (ident ~ ":").? ~ "while" ~ Index ~ condition ~ ("do" ~ expression | optional("do") ~ blockExpression) ~ optElse ~> WhileExpr |
+          Index ~ "break" ~ optional(ident) ~ optional("(" ~ expression ~ ")") ~> BreakExpr |
+          Index ~ "continue" ~ optional(ident) ~> ContinueExpr |
+          condition
+      )
+
+    def condition = comparitive
+
     def comparitive[_: P]: P[ExprAST] =
       P(
         (Index ~ NoCut(additive) ~ (StringIn("<=", ">=", "!=", "<", ">", "==", "div").! ~/ Index ~ additive)
