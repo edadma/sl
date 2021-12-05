@@ -88,7 +88,7 @@ object SLParser {
       P((functionParameters ~ "->" ~ Index ~ expressionOrBlock).map(FunctionExpr.tupled) | assignment)
 
     def assignment[_: P]: P[ExprAST] =
-      P((Index ~ applicative ~ "=" ~ Index ~ expressionOrBlock).map(AssignExpr.tupled) | comparitive)
+      P((Index ~ applicative ~ "=" ~ Index ~ expressionOrBlock).map(AssignExpr.tupled) | construct)
 
     def deeper[_: P]: P[Int] = P(" ".repX(indent + 1).!.map(_.length))
 
@@ -115,9 +115,10 @@ object SLParser {
           condition
       )
 
-    def condition[_: P]: P[ExprAST] = disjunctive
+    def condition[_: P]: P[ExprAST] = P(NoCut(disjunctive))
 
-    def disjunctive[_: P]: P[ExprAST] = P(Index ~ conjunctive ~ (kw("or").! ~/ Index ~ conjunctive).rep).map(leftInfix)
+    def disjunctive[_: P]: P[ExprAST] =
+      P(Index ~ NoCut(conjunctive) ~ (kw("or").! ~/ Index ~ conjunctive).rep).map(leftInfix)
 
     def conjunctive[_: P]: P[ExprAST] = P(Index ~ not ~ (kw("and").! ~/ Index ~ not).rep).map(leftInfix)
 
@@ -154,9 +155,11 @@ object SLParser {
 
     def applicative[_: P]: P[ExprAST] =
       P(
-        (Index ~ primary ~ (Index ~ "(" ~ (Index ~ expression).map(Arg.tupled).rep(sep = ",") ~ ")")
+        (Index ~ dot ~ (Index ~ "(" ~ (Index ~ expression).map(Arg.tupled).rep(sep = ",") ~ ")")
           .map(Args.tupled)
-          .rep(1)).map(ApplyExpr.tupled) | primary)
+          .rep(1)).map(ApplyExpr.tupled) | dot)
+
+    def dot[_: P]: P[ExprAST] = P((Index ~ primary ~ "." ~ ident).map(DotExpr.tupled) | primary)
 
     def primary[_: P]: P[ExprAST] =
       P(
