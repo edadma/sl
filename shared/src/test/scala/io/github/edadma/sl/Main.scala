@@ -86,14 +86,22 @@ object Main extends App {
 //      |
 //      |println('done')
 //      |""".stripMargin
+//    """
+//      |var x = 5
+//      |
+//      |def f(x) = x + 4
+//      |
+//      |s = `x = ${f(x)}.`
+//      |
+//      |println(s)
+//      |""".stripMargin
     """
-      |var x = 5
+      |//var count = 1
       |
-      |def f(x) = x + 4
+      |//while count <= 5
+      |// println(count++)
       |
-      |s = `x = ${f(x)}.`
-      |
-      |println(s)
+      |println('done')
       |""".stripMargin
 
   parse(input, SLParser.module(_)) match {

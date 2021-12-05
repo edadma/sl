@@ -102,14 +102,16 @@ object SLParser {
 
     def construct[_: P]: P[ExprAST] =
       P(
-        "if" ~ Index ~ condition ~ ("then" ~ expression | "then".? ~ blockExpression) ~ optElse ~> ConditionalExpr |
-          (ident ~ ":").? ~ "while" ~ Index ~ condition ~ ("do" ~ expression | optional("do") ~ blockExpression) ~ optElse ~> WhileExpr |
-          Index ~ "break" ~ optional(ident) ~ optional("(" ~ expression ~ ")") ~> BreakExpr |
-          Index ~ "continue" ~ optional(ident) ~> ContinueExpr |
+        "if" ~ (Index ~ condition ~ ("then" ~ expression | "then".? ~ blockExpression) ~ optElse)
+          .map(ConditionalExpr.tupled) |
+          ((ident ~ ":").? ~ "while" ~ Index ~ condition ~ ("do" ~ expression | "do".? ~ blockExpression) ~ optElse)
+            .map(WhileExpr.tupled) |
+          (Index ~ "break" ~ ident.? ~ ("(" ~ expression ~ ")").?).map(BreakExpr.tupled) |
+          (Index ~ "continue" ~ ident.?).map(ContinueExpr.tupled) |
           condition
       )
 
-    def condition = comparitive
+    def condition[_: P]: P[ExprAST] = comparitive
 
     def comparitive[_: P]: P[ExprAST] =
       P(
@@ -141,6 +143,7 @@ object SLParser {
           kw("null").map(_ => NullExpr) |
           kw("()").map(_ => NullExpr) |
           ("`" ~~ interpolator.rep ~~ "`").map(InterpolatedStringExpr) |
+          ("'" ~~ ("\\'" | !CharIn("'\n") ~~ AnyChar).rep.! ~~ "'").map(StringExpr) |
           "(" ~/ expression ~ ")"
       )
 
