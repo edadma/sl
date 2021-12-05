@@ -186,6 +186,9 @@ class Compilation {
               case "<="  => buf += LteInst
               case "<"   => buf += LtInst
               case "=="  => buf += EqInst
+              case ">="  => buf += GteInst
+              case ">"   => buf += GtInst
+              case "!="  => buf += NeInst
               case "div" => buf ++= Seq(SwapInst, ModInst, SLValue.ZERO, EqInst)
             }
 

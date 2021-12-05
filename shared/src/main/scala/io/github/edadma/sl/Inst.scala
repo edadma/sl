@@ -48,6 +48,18 @@ case object EqInst extends Inst {
   def execute(env: Env): Unit = env pushb (env.pop.deref == env.pop.deref)
 }
 
+case object GteInst extends Inst {
+  def execute(env: Env): Unit = env pushb (env.popn.doubleValue <= env.popn.doubleValue)
+}
+
+case object GtInst extends Inst {
+  def execute(env: Env): Unit = env pushb (env.popn.doubleValue < env.popn.doubleValue)
+}
+
+case object NeInst extends Inst {
+  def execute(env: Env): Unit = env pushb (env.pop.deref != env.pop.deref)
+}
+
 case object ModInst extends Inst {
   def execute(env: Env): Unit = {
     val divisor = env.popn.doubleValue

@@ -98,8 +98,7 @@ object Main extends App {
     """
       |var count = 1
       |
-      |//while count <= 5
-      |println(count++, count)
+      |while count <= 5 do println(count++)
       |
       |println('done')
       |""".stripMargin

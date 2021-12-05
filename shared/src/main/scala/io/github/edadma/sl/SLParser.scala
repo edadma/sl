@@ -7,6 +7,8 @@ import scala.annotation.{switch, tailrec}
 
 object SLParser {
 
+  private val delimiters = "[](){}`'\","
+
   implicit val whitespace = { implicit ctx: ParsingRun[_] =>
     val input = ctx.input
     val startIndex = ctx.index
@@ -76,6 +78,8 @@ object SLParser {
 
     def kw[_: P](s: String): P[Unit] = P(s ~~ !CharPred(_.isLetterOrDigit))
 
+    def sym[_: P](s: String): P[Unit] = P(s ~~ !CharPred(c => !c.isLetter && !delimiters.contains(c)))
+
     def expression[_: P]: P[ExprAST] = P(function)
 
     def functionParameters[_: P]: P[Seq[Ident]] = P(ident.map(id => Seq(id)) | "(" ~ ident.rep(sep = ",") ~ ")")
@@ -111,7 +115,17 @@ object SLParser {
           condition
       )
 
-    def condition[_: P]: P[ExprAST] = comparitive
+    def condition[_: P]: P[ExprAST] = disjunctive
+
+    def disjunctive[_: P]: P[ExprAST] = P(Index ~ conjunctive ~ (kw("or").! ~/ Index ~ conjunctive).rep).map(leftInfix)
+
+    def conjunctive[_: P]: P[ExprAST] = P(Index ~ not ~ (kw("and").! ~/ Index ~ not).rep).map(leftInfix)
+
+    def not[_: P]: P[ExprAST] =
+      P(
+        (kw("not").! ~ Index ~ not).map(PrefixExpr.tupled) |
+          comparitive
+      )
 
     def comparitive[_: P]: P[ExprAST] =
       P(
@@ -125,7 +139,18 @@ object SLParser {
       P(Index ~ multiplicative ~ (StringIn("+", "-").! ~/ Index ~ multiplicative).rep).map(leftInfix)
 
     def multiplicative[_: P]: P[ExprAST] =
-      P(Index ~ applicative ~ (StringIn("*", "/").! ~/ Index ~ applicative).rep).map(leftInfix)
+      P(Index ~ negative ~ (StringIn("*", "/").! ~/ Index ~ negative).rep).map(leftInfix)
+
+    def negative[_: P]: P[ExprAST] = P((sym("-").! ~ Index ~ negative).map(PrefixExpr.tupled) | power)
+
+    def power[_: P]: P[ExprAST] = P((Index ~ incdec ~ sym("^").! ~ Index ~ power).map(InfixExpr.tupled) | incdec)
+
+    def incdec[_: P]: P[ExprAST] =
+      P(
+        ((sym("++") | sym("--")).! ~ Index ~ applicative).map(PrefixExpr.tupled) |
+          (Index ~ applicative ~ (sym("++") | sym("--")).!).map(PostfixExpr.tupled) |
+          applicative
+      )
 
     def applicative[_: P]: P[ExprAST] =
       P(
