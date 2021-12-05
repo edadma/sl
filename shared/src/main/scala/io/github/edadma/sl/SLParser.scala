@@ -67,8 +67,12 @@ object SLParser {
     def statement[_: P]: P[StatAST] =
       P(
         kw("var") ~ (ident ~ ("=" ~ expressionOrBlock).?).map(VarStat.tupled) |
+          kw("class") ~ (ident ~ parameters ~ block).map(ClassStat.tupled) |
+          kw("def") ~ (ident ~ parameters ~ ("=" ~ expression | "=".? ~ blockExpression)).map(DefStat.tupled) |
           expression.map(ExpressionStat)
       )
+
+    def parameters[_: P]: P[Seq[Ident]] = P(("(" ~ ident.rep(sep = ",") ~ ")").?.map(_.getOrElse(Nil)))
 
     def kw[_: P](s: String): P[Unit] = P(s ~~ !CharPred(_.isLetterOrDigit))
 
