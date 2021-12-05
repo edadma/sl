@@ -75,7 +75,7 @@ object Main extends App {
       |
       |println(f(4))
       |
-      |println(`x = $x and f(4) = ${f(4)}`)
+      |println(`x = $x and f(4) = ${f(4)}.`)
       |""".stripMargin
 //    """
 //      |var x = 1
@@ -106,7 +106,7 @@ object Main extends App {
 
   parse(input, SLParser.module(_)) match {
     case Parsed.Success(t, index) =>
-      pprintln(t)
+//      pprintln(t)
 
       val c = Compilation(t)
 

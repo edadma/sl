@@ -164,27 +164,28 @@ object SLParser {
 
     def primary[_: P]: P[ExprAST] =
       P(
-        (kw("true") | kw("false")).!.map(BooleanExpr) |
-          ident.map(SymExpr) |
-          ((digit.repX ~~ "." ~~ digits | digits ~~ ".") ~~ (CharIn("eE").? ~~ CharIn("+\\-").? ~~ digits)).!.map(
-            DecimalExpr) |
-          digits.map(IntegerExpr) |
-          kw("null").map(_ => NullExpr) |
-          kw("()").map(_ => NullExpr) |
-          NoCut("`" ~~/ interpolator.repX ~~ "`").map(InterpolatedStringExpr) |
-          ("'" ~~ ("\\'" | !CharIn("'\n") ~~ AnyChar).rep.! ~~ "'").map(StringExpr) |
-          "(" ~/ expression ~ ")"
-      )
+        NoCut(
+          (kw("true") | kw("false")).!.map(BooleanExpr) |
+            ident.map(SymExpr) |
+            ((digit.repX ~~ "." ~~ digits | digits ~~ ".") ~~ (CharIn("eE").? ~~ CharIn("+\\-").? ~~ digits)).!.map(
+              DecimalExpr) |
+            digits.map(IntegerExpr) |
+            kw("null").map(_ => NullExpr) |
+            kw("()").map(_ => NullExpr) |
+            ("`" ~~/ NoCut(interpolator).repX ~~ "`").map(InterpolatedStringExpr) |
+            ("'" ~~ ("\\'" | !CharIn("'\n") ~~ AnyChar).rep.! ~~ "'").map(StringExpr) |
+            "(" ~/ expression ~ ")"
+        ))
 
-    def digit[_: P]: P[Unit] = CharIn("0-9")
+    def digit[_: P]: P[Unit] = P(CharIn("0-9"))
 
     def digits[_: P]: P[String] = P(digit.repX(1).!)
 
     def interpolator[_: P]: P[ExprAST] =
       P(
         P("$$").map(_ => StringExpr("$")) |
-          P("${") ~/ expression ~ "}" |
-          P("$") ~/ ident.map(SymExpr) |
+          P("${") ~/ expression ~/ "}" |
+          P("$") ~/ ident.map(SymExpr)./ |
           CharsWhile(c => c != '`' && c != '$').!.filter(_.nonEmpty).map(StringExpr)./
       )
 
