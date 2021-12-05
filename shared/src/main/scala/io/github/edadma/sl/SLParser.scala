@@ -172,7 +172,7 @@ object SLParser {
             digits.map(IntegerExpr) |
             kw("null").map(_ => NullExpr) |
             kw("()").map(_ => NullExpr) |
-            ("`" ~~/ NoCut(interpolator).repX ~~ "`").map(InterpolatedStringExpr) |
+            ("`" ~~/ interpolator.repX ~~ "`").map(InterpolatedStringExpr) |
             ("'" ~~ ("\\'" | !CharIn("'\n") ~~ AnyChar).rep.! ~~ "'").map(StringExpr) |
             "(" ~/ expression ~ ")"
         ))
