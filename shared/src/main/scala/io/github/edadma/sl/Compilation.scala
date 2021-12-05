@@ -94,6 +94,7 @@ class Compilation {
       buf += PosInst(pos)
 
     expr match {
+      case NullExpr => buf += SLNull
       case BreakExpr(pos, label, expr) =>
         if (loops.isEmpty)
           problem(pos, "break not inside a loop construct")

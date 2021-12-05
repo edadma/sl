@@ -76,7 +76,15 @@ object SLParser {
 
     def kw[_: P](s: String): P[Unit] = P(s ~~ !CharPred(_.isLetterOrDigit))
 
-    def expression[_: P]: P[ExprAST] = P(comparitive)
+    def expression[_: P]: P[ExprAST] = P(function)
+
+    def functionParameters[_: P]: P[Seq[Ident]] = P(ident.map(id => Seq(id)) | "(" ~ ident.rep(sep = ",") ~ ")")
+
+    def function[_: P]: P[ExprAST] =
+      P((functionParameters ~ "->" ~ Index ~ expressionOrBlock).map(FunctionExpr.tupled) | comparitive)
+
+    def assignment[_: P]: P[ExprAST] =
+      P(Index ~ applicative ~ "=" ~ Index ~ expressionOrBlock ~> AssignExpr | construct)
 
     def deeper[_: P]: P[Int] = P(" ".repX(indent + 1).!.map(_.length))
 

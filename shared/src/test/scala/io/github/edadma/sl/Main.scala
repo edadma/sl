@@ -88,7 +88,9 @@ object Main extends App {
 //      |""".stripMargin
     """
       |var x = 5
-      |var s = `x = $x.`
+      |def f(x) = x + 4
+      |var s = `x = ${f(x)}.`
+      |var a = ()
       |
       |println(s)
       |""".stripMargin
