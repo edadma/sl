@@ -128,13 +128,20 @@ object SLParser {
       res
     }
 
-    def number[_: P]: P[ExprAST] = P(CharIn("0-9").repX(1).!.map(IntegerExpr))
+    def digit[_: P]: P[Unit] = CharIn("0-9")
 
-    def parens[_: P]: P[ExprAST] = P("(" ~/ comparitive ~ ")")
+    def digits[_: P]: P[String] = P(digit.repX(1).!)
 
-    def variable[_: P]: P[ExprAST] = P(ident map SymExpr)
-
-    def primary[_: P]: P[ExprAST] = P(variable | number | parens)
+    def primary[_: P]: P[ExprAST] =
+      P(
+        (k("true") | k("false")).!.map(BooleanExpr) |
+          ident.map(SymExpr) |
+          ((digit.repX ~~ "." ~~ digits | digits ~~ ".") ~~ (CharIn("eE").? ~~ CharIn("+\\-").? ~~ digits)).!.map(
+            DecimalExpr) |
+          digits.map(IntegerExpr) |
+          k("null").map(_ => NullExpr) |
+          "(" ~/ comparitive ~ ")"
+      )
 
     def comparitive[_: P]: P[ExprAST] =
       P(
