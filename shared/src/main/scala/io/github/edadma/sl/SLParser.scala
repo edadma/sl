@@ -115,7 +115,7 @@ object SLParser {
           digits.map(IntegerExpr) |
           kw("null").map(_ => NullExpr) |
           kw("()").map(_ => NullExpr) |
-          ("`" ~~/ interpolator.rep ~~ "`").map(InterpolatedStringExpr) |
+          ("`" ~~ interpolator.rep ~~ "`").map(InterpolatedStringExpr) |
           "(" ~/ expression ~ ")"
       )
 
@@ -126,9 +126,9 @@ object SLParser {
     def interpolator[_: P]: P[ExprAST] =
       P(
         P("$$").map(_ => StringExpr("$")) |
-          P("${") ~/ expression ~ "}" |
-          (P("$") ~/ ident map SymExpr) |
-          CharsWhile(c => c != '`' && c != '$').!.map(StringExpr)
+          P("${") ~ expression ~ "}" |
+          P("$") ~ ident.map(SymExpr) |
+          CharsWhile(c => c != '`' && c != '$').!.filter(_.nonEmpty).map(StringExpr)
       )
 
     def keyword[_: P]: P[Unit] =

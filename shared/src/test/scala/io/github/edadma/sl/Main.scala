@@ -88,10 +88,9 @@ object Main extends App {
 //      |""".stripMargin
     """
       |var x = 5
+      |var s = `x = $x.`
       |
-      |//s = `x = $x.`
-      |
-      |println(123)
+      |println(s)
       |""".stripMargin
 
 //  val buf = new StringBuilder
