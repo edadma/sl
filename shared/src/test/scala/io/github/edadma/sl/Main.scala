@@ -1,7 +1,5 @@
 package io.github.edadma.sl
 
-//import io.github.edadma.char_reader.CharReader
-
 import fastparse._
 import pprint.pprintln
 
@@ -89,7 +87,9 @@ object Main extends App {
 //      |println('done')
 //      |""".stripMargin
     """
-      |3 + 4
+      |var x = 5
+      |
+      |`x = $x.`
       |""".stripMargin
 
 //  val buf = new StringBuilder

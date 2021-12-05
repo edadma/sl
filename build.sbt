@@ -25,7 +25,6 @@ lazy val sl = crossProject(JSPlatform, JVMPlatform, NativePlatform)
     libraryDependencies += "org.scalatest" %%% "scalatest" % "3.2.10" % "test",
     libraryDependencies ++= Seq(
       "io.github.edadma" %%% "cross-platform" % "0.1.1",
-//      "io.github.edadma" %%% "char-reader" % "0.1.7",
       "io.github.edadma" %%% "datetime" % "0.1.11",
     ),
     libraryDependencies ++= Seq(

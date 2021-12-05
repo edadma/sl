@@ -136,14 +136,6 @@ class SLParser(val input: ParserInput) extends Parser {
       "(" ~ expression ~ ")"
   }
 
-  def interpolator: Rule1[ExprAST] =
-    rule {
-      '$' ~ '$' ~!~ push(StringExpr("$")) |
-        '$' ~ '{' ~!~ expression ~ '}' |
-        '$' ~!~ identnsp ~> SymExpr |
-        capture(oneOrMore(noneOf("`$"))) ~> StringExpr
-    }
-
   def digits: Rule0 = rule(oneOrMore(CharPredicate.Digit))
 
   def keyword: Rule0 =
