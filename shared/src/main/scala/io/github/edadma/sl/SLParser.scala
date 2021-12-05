@@ -155,9 +155,10 @@ object SLParser {
 
     def applicative[_: P]: P[ExprAST] =
       P(
-        (Index ~ dot ~ (Index ~ "(" ~ (Index ~ expression).map(Arg.tupled).rep(sep = ",") ~ ")")
-          .map(Args.tupled)
-          .rep(1)).map(ApplyExpr.tupled) | dot)
+        NoCut(
+          (Index ~ dot ~ (Index ~ "(" ~/ (Index ~ expression).map(Arg.tupled).rep(sep = ","./) ~ ")")
+            .map(Args.tupled)
+            .rep(1)).map(ApplyExpr.tupled)) | dot)
 
     def dot[_: P]: P[ExprAST] = P((Index ~ primary ~ "." ~ ident).map(DotExpr.tupled) | primary)
 
@@ -170,7 +171,7 @@ object SLParser {
           digits.map(IntegerExpr) |
           kw("null").map(_ => NullExpr) |
           kw("()").map(_ => NullExpr) |
-          ("`" ~~ interpolator.rep ~~ "`").map(InterpolatedStringExpr) |
+          NoCut("`" ~~/ interpolator.repX ~~ "`").map(InterpolatedStringExpr) |
           ("'" ~~ ("\\'" | !CharIn("'\n") ~~ AnyChar).rep.! ~~ "'").map(StringExpr) |
           "(" ~/ expression ~ ")"
       )
@@ -182,9 +183,9 @@ object SLParser {
     def interpolator[_: P]: P[ExprAST] =
       P(
         P("$$").map(_ => StringExpr("$")) |
-          P("${") ~ expression ~ "}" |
-          P("$") ~ ident.map(SymExpr) |
-          CharsWhile(c => c != '`' && c != '$').!.filter(_.nonEmpty).map(StringExpr)
+          P("${") ~/ expression ~ "}" |
+          P("$") ~/ ident.map(SymExpr) |
+          CharsWhile(c => c != '`' && c != '$').!.filter(_.nonEmpty).map(StringExpr)./
       )
 
     def keyword[_: P]: P[Unit] =
