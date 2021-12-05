@@ -89,7 +89,9 @@ object Main extends App {
     """
       |var x = 5
       |
-      |`x = $x.`
+      |//s = `x = $x.`
+      |
+      |println(123)
       |""".stripMargin
 
 //  val buf = new StringBuilder
@@ -107,7 +109,17 @@ object Main extends App {
 //  readch(CharReader.fromString(input, indentation = Some(("//", "/*", "*/"))))
 
   parse(input, SLParser.module(_)) match {
-    case Parsed.Success(value, index) => pprintln(value)
+    case Parsed.Success(t, index) =>
+      pprintln(t)
+
+      val c = Compilation(t)
+
+//  c.listing()
+
+      val e = new ModuleEnv(c)
+
+//  e.trace = true
+      e.run()
     case f: Parsed.Failure =>
       println(f)
       println(f.extra.trace())
@@ -117,14 +129,5 @@ object Main extends App {
 //  val t = p.parseSources
 
 //  pprintln(t)
-
-//  val c = Compilation(t)
-
-//  c.listing()
-
-//  val e = new ModuleEnv(c)
-
-//  e.trace = true
-//  e.run()
 
 }

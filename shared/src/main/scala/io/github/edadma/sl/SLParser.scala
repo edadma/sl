@@ -98,7 +98,7 @@ object SLParser {
       P(Index ~ multiplicative ~ (StringIn("+", "-").! ~/ Index ~ multiplicative).rep).map(leftInfix)
 
     def multiplicative[_: P]: P[ExprAST] =
-      P(Index ~ primary ~ (StringIn("*", "/").! ~/ Index ~ primary).rep).map(leftInfix)
+      P(Index ~ applicative ~ (StringIn("*", "/").! ~/ Index ~ applicative).rep).map(leftInfix)
 
     def applicative[_: P]: P[ExprAST] =
       P(
