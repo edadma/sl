@@ -4,7 +4,7 @@ trait Inst {
   def execute(env: Env): Unit
 }
 
-case class PosInst(p: Cursor) extends Inst {
+case class PosInst(p: Int) extends Inst {
   def execute(env: Env): Unit = env pos p
 }
 

@@ -4,7 +4,7 @@ import scala.collection.mutable
 
 abstract class Env {
 
-  var _pos: Option[Cursor] = None
+  var _pos: Option[Int] = None
   var trace: Boolean = false
 
   val stack = new mutable.Stack[SLValue]
@@ -38,7 +38,7 @@ abstract class Env {
 
   def top: SLValue = stack.top
 
-  def pos(p: Cursor): Unit = _pos = Some(p)
+  def pos(p: Int): Unit = _pos = Some(p)
 
   def pushn(n: Number): Unit = push(SLNumber(n))
 

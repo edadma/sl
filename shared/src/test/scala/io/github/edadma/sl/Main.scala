@@ -2,6 +2,9 @@ package io.github.edadma.sl
 
 //import io.github.edadma.char_reader.CharReader
 
+import fastparse._
+import pprint.pprintln
+
 import scala.annotation.tailrec
 
 object Main extends App {
@@ -102,7 +105,14 @@ object Main extends App {
 //    }
 //
 //  readch(CharReader.fromString(input, indentation = Some(("//", "/*", "*/"))))
-//
+
+  parse(input, SLParser.module(_)) match {
+    case Parsed.Success(value, index) => pprintln(value)
+    case f: Parsed.Failure =>
+      println(f)
+      println(f.extra.trace())
+  }
+
 //  val p = new SLParser(buf.toString)
 //  val t = p.parseSources
 

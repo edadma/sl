@@ -4,6 +4,7 @@ import scala.collection.mutable
 import scala.collection.mutable.{ArrayBuffer, ListBuffer}
 
 class Compilation {
+  val NOPOS = -1
   val decls = new mutable.HashMap[String, DeclarationAST]
 
   trait BooleanCompilation
@@ -36,7 +37,7 @@ class Compilation {
   def code: Code = new Code(buf)
 
   def compileDecls(stats: Seq[StatAST]): Unit = {
-    def duplicate(pos: Cursor, name: String): Unit =
+    def duplicate(pos: Int, name: String): Unit =
       if (decls contains name)
         problem(pos, s"duplicate declaration: $name")
 
@@ -45,7 +46,7 @@ class Compilation {
         duplicate(pos, name)
         buf += SLString(name)
         buf += FunctionInst(name, new Compilation {
-          compileExpr(null, body)
+          compileExpr(NOPOS, body)
           buf += RetInst
         }.code, params map (_.name))
         buf += ConstInst
@@ -77,7 +78,7 @@ class Compilation {
     }
   }
 
-  def compileExpr(pos: Cursor,
+  def compileExpr(pos: Int,
                   expr: ExprAST,
                   bool: BooleanCompilation = null,
                   lvalue: Boolean = false): ArrayBuffer[Inst] = {
@@ -89,7 +90,7 @@ class Compilation {
       len
     }
 
-    if (pos ne null)
+    if (pos == NOPOS)
       buf += PosInst(pos)
 
     expr match {
@@ -102,7 +103,7 @@ class Compilation {
         buf += StringBuilderInst
 
         for (int <- exprs) {
-          compileExpr(null, int)
+          compileExpr(NOPOS, int)
           buf += AppendInst
         }
 
@@ -122,7 +123,7 @@ class Compilation {
             compileExpr(pos, value)
             buf += MapInsertInst
           case MapEntry(key, pos, value) =>
-            compileExpr(null, key)
+            compileExpr(NOPOS, key)
             compileExpr(pos, value)
             buf += MapInsertInst
         }
@@ -135,7 +136,7 @@ class Compilation {
         buf += SLValue.NIL
 
         for (e <- elems.reverse) {
-          compileExpr(null, e)
+          compileExpr(NOPOS, e)
           buf += ListPrependInst
         }
       case BooleanExpr(b) => buf += SLBoolean(b == "true")
@@ -170,7 +171,7 @@ class Compilation {
         compileExpr(lpos, left)
 
         right.zipWithIndex foreach {
-          case (RightOper(op, pos, expr), idx) =>
+          case (Predicate(op, pos, expr), idx) =>
             val last = idx == right.length - 1
 
             compileExpr(pos, expr)
@@ -198,22 +199,19 @@ class Compilation {
       case IntegerExpr(n)   => buf += SLNumber(n.toDouble)
       case DecimalExpr(n)   => buf += SLNumber(n.toDouble)
       case StringExpr(s)    => buf += SLString(s)
-      case LeftInfixExpr(lpos, left, right) =>
+      case InfixExpr(lpos, left, op, rpos, right) =>
         compileExpr(lpos, left)
         buf += DerefInst
-        right foreach {
-          case RightOper(op, pos, expr) =>
-            compileExpr(pos, expr)
-            buf += DerefInst
-            buf +=
-              (op match {
-                case "+"   => AddInst
-                case "-"   => SubInst
-                case "*"   => MulInst
-                case "/"   => DivInst
-                case "mod" => ModInst
-              })
-        }
+        compileExpr(rpos, right)
+        buf += DerefInst
+        buf +=
+          (op match {
+            case "+"   => AddInst
+            case "-"   => SubInst
+            case "*"   => MulInst
+            case "/"   => DivInst
+            case "mod" => ModInst
+          })
       case AssignExpr(lpos, lvalue, rpos, expr) =>
         lvalue match {
           case SymExpr(Ident(pos, name)) if (decls contains name) && decls(name).isInstanceOf[ValStat] =>
@@ -253,13 +251,13 @@ class Compilation {
 
         val exit = forward(BranchIfFalseInst)
 
-        compileExpr(null, body)
+        compileExpr(NOPOS, body)
         buf += DropInst
         loop(start)
         patch(exit)
 
         if (no.isDefined)
-          compileExpr(null, no.get)
+          compileExpr(NOPOS, no.get)
         else {
           loops.top.patchBreaks()
           buf += SLVoid
@@ -269,14 +267,14 @@ class Compilation {
 
         val jumpno = forward(BranchIfFalseInst)
 
-        compileExpr(null, yes)
+        compileExpr(NOPOS, yes)
 
         val jumpyes = forward(BranchInst) // if (no.isDefined) forward(BranchInst) else 0
 
         patch(jumpno)
 
         no foreach { e =>
-          compileExpr(null, e)
+          compileExpr(NOPOS, e)
           patch(jumpyes)
         }
 
@@ -307,7 +305,7 @@ class Compilation {
         buf += LvalueInst
 
         if (init.isDefined) {
-          compileExpr(null, init.get)
+          compileExpr(NOPOS, init.get)
           buf += AssignInst
         } else
           buf += DropInst
@@ -317,10 +315,10 @@ class Compilation {
         buf += PosInst(pos)
         buf += SLString(name)
         buf += SymInst
-        compileExpr(null, init)
+        compileExpr(NOPOS, init)
         buf += ConstInst
         v.initialized = true
-      case ExpressionStat(expr) => compileExpr(null, expr)
+      case ExpressionStat(expr) => compileExpr(NOPOS, expr)
     }
 
   def compileBlock(stats: Seq[StatAST]): ArrayBuffer[Inst] = {
@@ -336,10 +334,10 @@ class Compilation {
 
 object Compilation {
 
-  def apply(sources: SourcesAST): Code =
+  def apply(module: ModuleAST): Code =
     new Compilation {
-      compileDecls(sources.stats)
-      compileStats(sources.stats)
+      compileDecls(module.stats)
+      compileStats(module.stats)
     }.code
 
 }

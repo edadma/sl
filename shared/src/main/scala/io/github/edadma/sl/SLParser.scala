@@ -1,11 +1,11 @@
-package io.github.edadma.fastparse
+package io.github.edadma.sl
 
 import fastparse._
 import pprint._
 
 import scala.annotation.{switch, tailrec}
 
-object Main extends App {
+object SLParser {
 
   implicit val whitespace = { implicit ctx: ParsingRun[_] =>
     val input = ctx.input
@@ -18,7 +18,7 @@ object Main extends App {
         else {
           ctx.cut = true
           val res = ctx.freshFailure(current)
-          if (ctx.verboseFailures) ctx.setMsg(startIndex, () => Util.literalize("*/"))
+          if (ctx.verboseFailures) ctx.setMsg(startIndex, () => Util.literalize("*/")) // todo: this seems to depdend on pprint
           res
         }
       } else {
@@ -72,7 +72,7 @@ object Main extends App {
 
     def k[_: P](s: String): P[Unit] = P(s ~~ !CharPred(_.isLetterOrDigit))
 
-    def deeper[_: P]: P[Int] = P(" ".repX(indent + 1).!.map(_.length)).log
+    def deeper[_: P]: P[Int] = P(" ".repX(indent + 1).!.map(_.length))
 
     def block[_: P]: P[Seq[StatAST]] =
       P(
@@ -134,7 +134,7 @@ object Main extends App {
 
     def variable[_: P]: P[ExprAST] = P(ident map SymExpr)
 
-    def factor[_: P]: P[ExprAST] = P(variable | number | parens)
+    def primary[_: P]: P[ExprAST] = P(variable | number | parens)
 
     def comparitive[_: P]: P[ExprAST] =
       P(
@@ -145,36 +145,12 @@ object Main extends App {
       )
 
     def multiplicative[_: P]: P[ExprAST] =
-      P(Index ~ factor ~ (StringIn("*", "/").! ~/ Index ~ factor).rep).map(leftInfix)
+      P(Index ~ primary ~ (StringIn("*", "/").! ~/ Index ~ primary).rep).map(leftInfix)
 
     def additive[_: P]: P[ExprAST] =
       P(Index ~ multiplicative ~ (StringIn("+", "-").! ~/ Index ~ multiplicative).rep).map(leftInfix)
 
     def expression[_: P]: P[ExprAST] = P(comparitive)
-  }
-
-  val input = {
-    """
-      |// asdf
-      |var x =
-      | 3+4 // asdf
-      | var y =
-      |  A
-      |  // asdf
-      |  B
-      | 5+6
-      |
-      |123 //asdf
-      |
-      |// asdf
-      |""".stripMargin
-  }
-
-  parse(input, module(_)) match {
-    case Parsed.Success(value, index) => pprintln(value)
-    case f: Parsed.Failure =>
-      println(f)
-      println(f.extra.trace())
   }
 
 }
