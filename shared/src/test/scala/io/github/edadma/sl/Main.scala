@@ -96,10 +96,10 @@ object Main extends App {
 //      |println(s)
 //      |""".stripMargin
     """
-      |//var count = 1
+      |var count = 1
       |
       |//while count <= 5
-      |// println(count++)
+      |println(count++, count)
       |
       |println('done')
       |""".stripMargin
