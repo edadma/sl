@@ -81,10 +81,10 @@ object SLParser {
     def functionParameters[_: P]: P[Seq[Ident]] = P(ident.map(id => Seq(id)) | "(" ~ ident.rep(sep = ",") ~ ")")
 
     def function[_: P]: P[ExprAST] =
-      P((functionParameters ~ "->" ~ Index ~ expressionOrBlock).map(FunctionExpr.tupled) | comparitive)
+      P((functionParameters ~ "->" ~ Index ~ expressionOrBlock).map(FunctionExpr.tupled) | assignment)
 
     def assignment[_: P]: P[ExprAST] =
-      P(Index ~ applicative ~ "=" ~ Index ~ expressionOrBlock ~> AssignExpr | construct)
+      P((Index ~ applicative ~ "=" ~ Index ~ expressionOrBlock).map(AssignExpr.tupled) | comparitive)
 
     def deeper[_: P]: P[Int] = P(" ".repX(indent + 1).!.map(_.length))
 
