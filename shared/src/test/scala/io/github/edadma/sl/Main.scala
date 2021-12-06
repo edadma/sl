@@ -103,7 +103,7 @@ object Main extends App {
 //      |
 //      |println('done')
 //      |""".stripMargin
-    "println(false or false)"
+    "println(\"asdf\")"
 
   parse(input, SLParser.module(_)) match {
     case Parsed.Success(t, index) =>

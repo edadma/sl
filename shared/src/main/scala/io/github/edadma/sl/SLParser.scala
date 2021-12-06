@@ -173,9 +173,11 @@ object SLParser {
             kw("null").map(_ => NullExpr) |
             kw("()").map(_ => NullExpr) |
             ("`" ~~/ interpolator.repX ~~ "`").map(InterpolatedStringExpr) |
-            ("'" ~~ ("\\'" | !CharIn("'\n") ~~ AnyChar).rep.! ~~ "'").map(StringExpr) |
-            "(" ~/ expression ~ ")"
-        ))
+            ("'" ~~ ("\\'" | !CharIn("'\n") ~~ AnyChar).repX.! ~~ "'").map(StringExpr) |
+            ("\"" ~~ ("\\\"" | !CharIn("\"\n") ~~ AnyChar).repX.! ~~ "\"").map(StringExpr) |
+            "{" ~/ (expression ~ ":" ~ Index ~ expression).map(MapEntry.tupled).rep(sep = ",").map(MapExpr) ~ "}" |
+            "[" ~/ expression.rep(sep = ",").map(SeqExpr) ~ "]" |
+            "(" ~/ expression ~ ")"))
 
     def digit[_: P]: P[Unit] = P(CharIn("0-9"))
 
