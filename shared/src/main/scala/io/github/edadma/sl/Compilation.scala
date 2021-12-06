@@ -141,6 +141,9 @@ class Compilation {
           buf += ListPrependInst
         }
       case BooleanExpr(b) => buf += SLBoolean(b == "true")
+      case PrefixExpr("not", pos, expr) =>
+        compileExpr(pos, expr)
+        buf += NotInst
       case PrefixExpr("-", pos, expr) =>
         compileExpr(pos, expr)
         buf += NegInst
@@ -203,6 +206,15 @@ class Compilation {
       case IntegerExpr(n)   => buf += SLNumber(n.toDouble)
       case DecimalExpr(n)   => buf += SLNumber(n.toDouble)
       case StringExpr(s)    => buf += SLString(s)
+      case InfixExpr(lpos, left, op @ ("or" | "and"), rpos, right) =>
+        compileExpr(lpos, left)
+        buf += DerefInst
+
+        val fixup = forward(if (op == "or") BranchIfTrueBoolInst else BranchIfFalseBoolInst)
+
+        compileExpr(rpos, right)
+        buf += DerefInst
+        patch(fixup)
       case InfixExpr(lpos, left, op, rpos, right) =>
         compileExpr(lpos, left)
         buf += DerefInst

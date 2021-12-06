@@ -12,6 +12,10 @@ case object NegInst extends Inst {
   def execute(env: Env): Unit = env pushn -env.popn.doubleValue
 }
 
+case object NotInst extends Inst {
+  def execute(env: Env): Unit = env pushb !env.popb
+}
+
 case object AddInst extends Inst {
   def execute(env: Env): Unit = env pushn (env.popn.doubleValue + env.popn.doubleValue)
 }
@@ -144,6 +148,19 @@ case object BranchIfFalseCompareInst extends Inst {
     }
   }
 }
+
+//case object BranchIfTrueCompareInst extends Inst {
+//  def execute(env: Env): Unit = {
+//    val disp = env.popi
+//    val cond = env.popb
+//
+//    if (cond) {
+//      env.pop
+//      env push SLValue.TRUE
+//      env.branch(disp)
+//    }
+//  }
+//}
 
 case object BranchInst extends Inst {
   def execute(env: Env): Unit = env.branch(env.popi)

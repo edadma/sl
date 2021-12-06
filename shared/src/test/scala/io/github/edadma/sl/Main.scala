@@ -68,15 +68,15 @@ object Main extends App {
 //      |
 //      |println(o1.x, o1.m(), o2.x, o2.m())
 //      |""".stripMargin
-    """
-      |x = 5
-      |
-      |def f(x) = x + 3
-      |
-      |println(f(4))
-      |
-      |println(`x = $x and f(4) = ${f(4)}.`)
-      |""".stripMargin
+//    """
+//      |x = 5
+//      |
+//      |def f(x) = x + 3
+//      |
+//      |println(f(4))
+//      |
+//      |println(`x = $x and f(4) = ${f(4)}.`)
+//      |""".stripMargin
 //    """
 //      |var x = 1
 //      |
@@ -103,6 +103,7 @@ object Main extends App {
 //      |
 //      |println('done')
 //      |""".stripMargin
+    "println(false or false)"
 
   parse(input, SLParser.module(_)) match {
     case Parsed.Success(t, index) =>
@@ -114,7 +115,7 @@ object Main extends App {
 
       val e = new ModuleEnv(c)
 
-//  e.trace = true
+      e.trace = true
       e.run()
     case f: Parsed.Failure =>
       println(f)
