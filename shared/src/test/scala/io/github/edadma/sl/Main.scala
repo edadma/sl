@@ -6,19 +6,19 @@ import pprint.pprintln
 import scala.annotation.tailrec
 
 object Main extends App {
-  val input =
-//    """
-//      |def add(a, b) =
-//      | println('a', a)
-//      | println('b', b)
-//      |
-//      | times_a = n -> n*a
-//      |
-//      | times_a(2) + b
-//      |
-//      |println(add(3, 4), add(5, 6))
-//      |println((a -> 3*a)(4))
-//      |""".stripMargin
+  val input = {
+    """
+      |def add(a, b) =
+      | println('a', a)
+      | println('b', b)
+      |
+      | times_a = n -> n*a
+      |
+      | times_a(2) + b
+      |
+      |println(add(3, 4), add(5, 6))
+      |println((a -> 3*a)(4))
+      |""".stripMargin
 //    """
 //      |if true then
 //      | println('yes')
@@ -77,15 +77,15 @@ object Main extends App {
 //      |
 //      |println(`x = $x and f(4) = ${f(4)}.`)
 //      |""".stripMargin
-    """
-      |var x = 1
-      |
-      |while true
-      | println(x)
-      | if x++ == 3 then break
-      |
-      |println('done')
-      |""".stripMargin
+//    """
+//      |var x = 1
+//      |
+//      |while true
+//      | println(x)
+//      | if x++ == 3 then break
+//      |
+//      |println('done')
+//      |""".stripMargin
 //    """
 //      |var x = 5
 //      |
@@ -103,6 +103,12 @@ object Main extends App {
 //      |
 //      |println('done')
 //      |""".stripMargin
+//    """
+//      |var a = 1
+//      |
+//      |println(a++ < 5 + 6)
+//      |""".trim.stripMargin
+  }
   parse(input, SLParser.module(_)) match {
     case Parsed.Success(t, index) =>
 //      pprintln(t)

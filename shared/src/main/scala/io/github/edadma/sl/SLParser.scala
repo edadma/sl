@@ -78,8 +78,8 @@ object SLParser {
 
     def kw[_: P](s: String): P[Unit] = P(s ~~ !CharPred(_.isLetterOrDigit))
 
-    def sym[_: P](s: String): P[Unit] =
-      P(s ~~ !CharPred(c => !c.isLetterOrDigit && !delimiters.contains(c) && !c.isWhitespace))
+    def sym[_: P, T](p: => P[T]): P[T] =
+      P(p ~~ !CharPred(c => !c.isLetterOrDigit && !delimiters.contains(c) && !c.isWhitespace))
 
     def expression[_: P]: P[ExprAST] = P(function)
 
@@ -131,17 +131,17 @@ object SLParser {
 
     def comparitive[_: P]: P[ExprAST] =
       P(
-        (Index ~ NoCut(additive) ~ (StringIn("<=", ">=", "!=", "==", "<", ">", "div").! ~/ Index ~ additive)
+        (Index ~ NoCut(additive) ~ (sym(StringIn("<=", ">=", "!=", "==", "<", ">", "div")).! ~/ Index ~ additive)
           .map(Predicate.tupled)
           .rep(1))
           .map(CompareExpr.tupled) | additive
       )
 
     def additive[_: P]: P[ExprAST] =
-      P(Index ~ multiplicative ~ ((sym("+") | sym("-")).! ~/ Index ~ multiplicative).rep).map(leftInfix)
+      P(Index ~ multiplicative ~ (sym(StringIn("+", "-")).! ~/ Index ~ multiplicative).rep).map(leftInfix)
 
     def multiplicative[_: P]: P[ExprAST] =
-      P(Index ~ negative ~ (StringIn("*", "/").! ~/ Index ~ negative).rep).map(leftInfix)
+      P(Index ~ negative ~ (sym(StringIn("*", "/")).! ~/ Index ~ negative).rep).map(leftInfix)
 
     def negative[_: P]: P[ExprAST] = P((sym("-").! ~ Index ~ negative).map(PrefixExpr.tupled) | power)
 
@@ -149,8 +149,8 @@ object SLParser {
 
     def incdec[_: P]: P[ExprAST] =
       P(
-        ((sym("++") | sym("--")).! ~ Index ~ applicative).map(PrefixExpr.tupled) |
-          (Index ~ applicative ~ (sym("++") | sym("--")).!).map(PostfixExpr.tupled) |
+        (sym(StringIn("++", "--")).! ~ Index ~ applicative).map(PrefixExpr.tupled) |
+          (Index ~ applicative ~ sym(StringIn("++", "--")).!).map(PostfixExpr.tupled) |
           applicative
       )
 
