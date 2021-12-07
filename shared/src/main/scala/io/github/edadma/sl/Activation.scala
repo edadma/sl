@@ -21,6 +21,8 @@ case class ModuleActivation(code: Code) extends Activation {
   }
 
   def symbol(name: String): Option[SLValue] = locals get name orElse (Global.map get name)
+
+  override def toString: String = s"ModuleActivation(locals: ${locals.keys.mkString(", ")})"
 }
 
 trait FunctionLikeActivation extends Activation {

@@ -72,7 +72,7 @@ abstract class Env {
 
   def problem(msg: String): Nothing = {
     // todo: use _pos
-    sys.error(msg)
+    sys.error(s"${_pos.getOrElse("no pos")}: $msg")
   }
 
 }
@@ -81,7 +81,9 @@ class ModuleEnv(code: Code) extends Env {
 
   var act: Activation = ModuleActivation(code)
 
-  def symbol(name: String): SLValue = act.symbol(name) getOrElse problem(s"symbol not found: $name")
+  def symbol(name: String): SLValue = {
+    act.symbol(name) getOrElse problem(s"symbol not found: $name")
+  }
 
   def lvalue(name: String): SLValue = act.symbol(name) getOrElse act.define(name, new VarMutable(SLNull))
 

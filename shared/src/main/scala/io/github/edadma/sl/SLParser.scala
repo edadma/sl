@@ -96,7 +96,8 @@ object SLParser {
     def block[_: P]: P[Seq[StatAST]] =
       P(
         "\n" ~~ deeper
-          .flatMapX(i => new Parser(indent = i).statement.?.rep(1, sep = ("\n" + " " * i)./))
+          .flatMapX(i =>
+            new Parser(indent = i).statement.?.rep(1, sep = "\n" ~~ ((" " * i) | " ".repX ~~ &("\n" | End))))
           .map(_.filter(_.isDefined).map(_.get)))
 
     def blockExpression[_: P]: P[ExprAST] = P(block map BlockExpr)

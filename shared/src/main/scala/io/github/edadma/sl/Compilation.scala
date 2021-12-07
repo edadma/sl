@@ -36,6 +36,12 @@ class Compilation {
 
   def code: Code = new Code(buf)
 
+  def compileDecls(expr: ExprAST): Unit =
+    expr match {
+      case BlockExpr(stats) => compileStats(stats)
+      case _                =>
+    }
+
   def compileDecls(stats: Seq[StatAST]): Unit = {
     def duplicate(pos: Int, name: String): Unit =
       if (decls contains name)
@@ -46,6 +52,7 @@ class Compilation {
         duplicate(pos, name)
         buf += SLString(name)
         buf += FunctionInst(name, new Compilation {
+          compileDecls(body)
           compileExpr(NOPOS, body)
           buf += RetInst
         }.code, params map (_.name))
@@ -165,6 +172,7 @@ class Compilation {
         buf += AssignInst
       case FunctionExpr(params, pos, body) =>
         buf += FunctionInst("*anonymous*", new Compilation {
+          compileDecls(body)
           compileExpr(pos, body)
           buf += RetInst
         }.code, params map (_.name))
