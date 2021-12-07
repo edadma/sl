@@ -78,7 +78,8 @@ object SLParser {
 
     def kw[_: P](s: String): P[Unit] = P(s ~~ !CharPred(_.isLetterOrDigit))
 
-    def sym[_: P](s: String): P[Unit] = P(s ~~ !CharPred(c => !c.isLetter && !delimiters.contains(c)))
+    def sym[_: P](s: String): P[Unit] =
+      P(s ~~ !CharPred(c => !c.isLetterOrDigit && !delimiters.contains(c) && !c.isWhitespace))
 
     def expression[_: P]: P[ExprAST] = P(function)
 
@@ -130,14 +131,14 @@ object SLParser {
 
     def comparitive[_: P]: P[ExprAST] =
       P(
-        (Index ~ NoCut(additive) ~ (StringIn("<=", ">=", "!=", "<", ">", "==", "div").! ~/ Index ~ additive)
+        (Index ~ NoCut(additive) ~ (StringIn("<=", ">=", "!=", "==", "<", ">", "div").! ~/ Index ~ additive)
           .map(Predicate.tupled)
           .rep(1))
           .map(CompareExpr.tupled) | additive
       )
 
     def additive[_: P]: P[ExprAST] =
-      P(Index ~ multiplicative ~ (StringIn("+", "-").! ~/ Index ~ multiplicative).rep).map(leftInfix)
+      P(Index ~ multiplicative ~ ((sym("+") | sym("-")).! ~/ Index ~ multiplicative).rep).map(leftInfix)
 
     def multiplicative[_: P]: P[ExprAST] =
       P(Index ~ negative ~ (StringIn("*", "/").! ~/ Index ~ negative).rep).map(leftInfix)

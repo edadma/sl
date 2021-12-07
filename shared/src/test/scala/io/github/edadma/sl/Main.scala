@@ -77,15 +77,15 @@ object Main extends App {
 //      |
 //      |println(`x = $x and f(4) = ${f(4)}.`)
 //      |""".stripMargin
-//    """
-//      |var x = 1
-//      |
-//      |while true
-//      | println(x)
-//      | if x++ == 3 then break
-//      |
-//      |println('done')
-//      |""".stripMargin
+    """
+      |var x = 1
+      |
+      |while true
+      | println(x)
+      | if x++ == 3 then break
+      |
+      |println('done')
+      |""".stripMargin
 //    """
 //      |var x = 5
 //      |
@@ -103,8 +103,6 @@ object Main extends App {
 //      |
 //      |println('done')
 //      |""".stripMargin
-    "println(\"asdf\")"
-
   parse(input, SLParser.module(_)) match {
     case Parsed.Success(t, index) =>
 //      pprintln(t)
@@ -115,7 +113,7 @@ object Main extends App {
 
       val e = new ModuleEnv(c)
 
-      e.trace = true
+//      e.trace = true
       e.run()
     case f: Parsed.Failure =>
       println(f)
