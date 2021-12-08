@@ -92,40 +92,27 @@ object Main extends App {
 //      |println('done')
 //      |""".stripMargin
 //    """
-//      |var a = 1
-//      |
-//      |println(a++ < 5 + 6)
-//      |""".trim.stripMargin
-//    """
-//      |def add(a, b) =
-//      | var times_a = n -> n*a
-//      |
-//      | times_a(2) + b
-//      |
-//      |println(add(3, 4))
-//      |""".stripMargin
-    """
-      |def add(a, b) =
-      | println('a', a)
-      | println('b', b)
-      |
-      | times_a = n -> n*a
-      |
-      | times_a(2) + b
-      |
-      |println(add(3, 4), add(5, 6))
-      |println((a -> 3*a)(4))
-      |""".stripMargin
-//    """
 //      |def add(a, b) =
 //      | println('a', a)
 //      | println('b', b)
 //      |
-//      | a + b
+//      | times_a = n -> n*a
+//      |
+//      | times_a(2) + b
 //      |
 //      |println(add(3, 4), add(5, 6))
+//      |println((a -> 3*a)(4))
 //      |""".stripMargin
-
+    """
+      |var count = 1
+      |
+      |while count <= 5
+      | println(count++)
+      | if count <= 3 then continue
+      | println('loop')
+      |
+      |println('done')
+      |""".stripMargin
   parse(input, SLParser.module(_)) match {
     case Parsed.Success(t, index) =>
 //      pprintln(t)

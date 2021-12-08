@@ -101,10 +101,15 @@ class Compilation {
       buf += PosInst(pos)
 
     expr match {
+      case ContinueExpr(pos, label) =>
+        if (loops.isEmpty)
+          problem(pos, "'continue' not inside a loop construct")
+
+        loop(loops.top.start)
       case NullExpr => buf += SLNull
       case BreakExpr(pos, label, expr) =>
         if (loops.isEmpty)
-          problem(pos, "break not inside a loop construct")
+          problem(pos, "'break' not inside a loop construct")
 
         loops.top.addBreak()
       case InterpolatedStringExpr(exprs) =>
