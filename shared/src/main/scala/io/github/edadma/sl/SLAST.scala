@@ -74,6 +74,9 @@ case class ConditionalExpr(pos: Int, cond: ExprAST, yes: ExprAST, no: Option[Exp
 
 case class WhileExpr(label: Option[Ident], pos: Int, cond: ExprAST, body: ExprAST, no: Option[ExprAST]) extends ExprAST
 
+case class DoWhileExpr(label: Option[Ident], body: ExprAST, pos: Int, cond: ExprAST, no: Option[ExprAST])
+    extends ExprAST
+
 case class OrExpr(left: ExprAST, right: ExprAST) extends ExprAST
 
 case class AndExpr(left: ExprAST, right: ExprAST) extends ExprAST

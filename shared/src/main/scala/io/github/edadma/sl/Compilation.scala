@@ -291,6 +291,24 @@ class Compilation {
           loops.top.patchBreaks()
           buf += SLVoid
         }
+      case DoWhileExpr(label, body, pos, cond, no) =>
+        val start = buf.length
+
+        loops push new Loop
+
+        compileExpr(NOPOS, body)
+        buf += DropInst
+        compileExpr(pos, cond)
+
+        // todo: conditional branch
+        loop(start)
+
+        if (no.isDefined)
+          compileExpr(NOPOS, no.get)
+        else {
+          loops.top.patchBreaks()
+          buf += SLVoid
+        }
       case ConditionalExpr(pos, cond, yes, no) =>
         compileExpr(pos, cond)
 

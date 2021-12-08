@@ -96,7 +96,7 @@ object SLParser {
     def block[_: P]: P[Seq[StatAST]] =
       P(
         "\n" ~~ deeper
-          .flatMapX(i => new Parser(indent = i).statement.?.rep(1, sep = "\n" ~~ ((" " * i) | Pass() ~ &("\n" | End))))
+          .flatMapX(i => new Parser(indent = i).statement.?.rep(1, sep = "\n" ~~ ((" " * i) | Pass ~ &("\n" | End))))
           .map(_.filter(_.isDefined).map(_.get)))
 
     def blockExpression[_: P]: P[ExprAST] = P(block map BlockExpr)
@@ -111,6 +111,8 @@ object SLParser {
           .map(ConditionalExpr.tupled) |
           ((ident ~ ":").? ~ "while" ~ Index ~ condition ~ ("do" ~ expression | "do".? ~ blockExpression) ~ optElse)
             .map(WhileExpr.tupled) |
+          ((ident ~ ":").? ~ "do" ~ expressionOrBlock ~ nl.? ~ "while" ~ Index ~ condition ~ optElse)
+            .map(DoWhileExpr.tupled) |
           (Index ~ "break" ~ ident.? ~ ("(" ~ expression ~ ")").?).map(BreakExpr.tupled) |
           (Index ~ "continue" ~ ident.?).map(ContinueExpr.tupled) |
           condition
