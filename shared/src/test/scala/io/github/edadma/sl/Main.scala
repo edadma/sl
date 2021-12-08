@@ -8,13 +8,16 @@ import scala.annotation.tailrec
 object Main extends App {
   val input =
 //    """
-//      |if true then
-//      | println('yes')
-//      | println('wow')
-//      |else
-//      | println('no')
-//      | println('wee')
+//      |def p(b)
+//      | if b then
+//      |  println('yes')
+//      |  println('wow')
+//      | else
+//      |  println('no')
+//      |  println('wee')
 //      |
+//      |p(true)
+//      |p(false)
 //      |println('done')
 //      |""".stripMargin
 //    """
@@ -45,17 +48,17 @@ object Main extends App {
 //      |println(x)
 //      |println(x, x++, x)
 //      |""".stripMargin
-//    """
-//      |class c(a)
-//      | x = a + 10
-//      |
-//      | def m = a + 20
-//      |
-//      |o1 = c(3)
-//      |o2 = c(4)
-//      |
-//      |println(o1.x, o1.m(), o2.x, o2.m())
-//      |""".stripMargin
+    """
+      |class c(a)
+      | x = a + 10
+      |
+      | def m = a + 20
+      |
+      |o1 = c(3)
+      |o2 = c(4)
+      |
+      |println(o1.x, o1.m(), o2.x, o2.m())
+      |""".stripMargin
 //    """
 //      |x = 5
 //      |
@@ -103,16 +106,17 @@ object Main extends App {
 //      |println(add(3, 4), add(5, 6))
 //      |println((a -> 3*a)(4))
 //      |""".stripMargin
-    """
-      |var count = 1
-      |
-      |while count <= 5
-      | println(count++)
-      | if count <= 3 then continue
-      | println('loop')
-      |
-      |println('done')
-      |""".stripMargin
+//    """
+//      |var count = 1
+//      |
+//      |while count <= 5
+//      | println(count++)
+//      | if count <= 3
+//      |  continue
+//      | println('loop')
+//      |
+//      |println('done')
+//      |""".stripMargin
   parse(input, SLParser.module(_)) match {
     case Parsed.Success(t, index) =>
 //      pprintln(t)
