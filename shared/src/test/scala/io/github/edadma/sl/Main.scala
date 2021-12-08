@@ -8,25 +8,6 @@ import scala.annotation.tailrec
 object Main extends App {
   val input =
 //    """
-//      |def add(a, b) =
-//      | println('a', a)
-//      | println('b', b)
-//      |
-//      | times_a = n -> n*a
-//      |
-//      | times_a(2) + b
-//      |
-//      |println(add(3, 4), add(5, 6))
-//      |println((a -> 3*a)(4))
-//      |""".stripMargin
-//    """
-//      |def add(a, b) =
-//      | x = a + b
-//      | x
-//      |
-//      |println(add(3, 4))
-//      |""".stripMargin
-//    """
 //      |if true then
 //      | println('yes')
 //      | println('wow')
@@ -64,16 +45,16 @@ object Main extends App {
 //      |println(x)
 //      |println(x, x++, x)
 //      |""".stripMargin
-    """
-      |class c(a)
-      | x = a + 10
-      |
-      | def m = a + 20
-      |
-      |o1 = c(3)
-      |o2 = c(4)
-      |
-      |println(o1.x, o1.m(), o2.x, o2.m())
+//    """
+//      |class c(a)
+//      | x = a + 10
+//      |
+//      | def m = a + 20
+//      |
+//      |o1 = c(3)
+//      |o2 = c(4)
+//      |
+//      |println(o1.x, o1.m(), o2.x, o2.m())
 //      |""".stripMargin
 //    """
 //      |x = 5
@@ -122,6 +103,27 @@ object Main extends App {
 //      | times_a(2) + b
 //      |
 //      |println(add(3, 4))
+//      |""".stripMargin
+    """
+      |def add(a, b) =
+      | println('a', a)
+      | println('b', b)
+      |
+      | times_a = n -> n*a
+      |
+      | times_a(2) + b
+      |
+      |println(add(3, 4), add(5, 6))
+      |println((a -> 3*a)(4))
+      |""".stripMargin
+//    """
+//      |def add(a, b) =
+//      | println('a', a)
+//      | println('b', b)
+//      |
+//      | a + b
+//      |
+//      |println(add(3, 4), add(5, 6))
 //      |""".stripMargin
 
   parse(input, SLParser.module(_)) match {

@@ -38,7 +38,7 @@ class Compilation {
 
   def compileDecls(expr: ExprAST): Unit =
     expr match {
-      case BlockExpr(stats) => compileStats(stats)
+      case BlockExpr(stats) => compileDecls(stats)
       case _                =>
     }
 
