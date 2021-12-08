@@ -6,7 +6,7 @@ lazy val sl = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   .settings(
     name := "sl",
     version := "0.1.0",
-    scalaVersion := "2.13.6",
+    scalaVersion := "2.13.7",
     scalacOptions ++=
       Seq(
         "-deprecation",
