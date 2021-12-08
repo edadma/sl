@@ -29,9 +29,9 @@ class Compilation {
 
   def patch(fixup: Int): Unit = buf(fixup) = SLInteger(buf.length - fixup - 2)
 
-  def loop(start: Int): Unit = {
+  def loop(start: Int, inst: Inst = BranchInst): Unit = {
     buf += SLInteger(-(buf.length - start) - 2)
-    buf += BranchInst
+    buf += inst
   }
 
   def code: Code = new Code(buf)
@@ -299,9 +299,7 @@ class Compilation {
         compileExpr(NOPOS, body)
         buf += DropInst
         compileExpr(pos, cond)
-
-        // todo: conditional branch
-        loop(start)
+        loop(start, BranchIfTrueInst)
 
         if (no.isDefined)
           compileExpr(NOPOS, no.get)

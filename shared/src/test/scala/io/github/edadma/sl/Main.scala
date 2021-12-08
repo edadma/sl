@@ -130,7 +130,7 @@ object Main extends App {
         | println(count++)
         | if count <= 3
         |  continue
-        | println('loop')
+        | println('loop', count)
         |while count <= 5
         |
         |println('done')
