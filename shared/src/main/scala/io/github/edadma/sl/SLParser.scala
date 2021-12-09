@@ -120,8 +120,7 @@ object SLParser {
 
     def condition[_: P]: P[ExprAST] = P(disjunctive)
 
-    def disjunctive[_: P]: P[ExprAST] =
-      P(Index ~ conjunctive ~ (kw("or").! ~ Index ~ conjunctive).rep).map(leftInfix)
+    def disjunctive[_: P]: P[ExprAST] = P(Index ~ conjunctive ~ (kw("or").! ~ Index ~ conjunctive).rep).map(leftInfix)
 
     def conjunctive[_: P]: P[ExprAST] = P(Index ~ not ~ (kw("and").! ~ Index ~ not).rep).map(leftInfix)
 
@@ -133,7 +132,7 @@ object SLParser {
 
     def comparitive[_: P]: P[ExprAST] =
       P(
-        (Index ~ additive ~ (sym(StringIn("<=", ">=", "!=", "==", "<", ">", "div")).! ~ Index ~ additive)
+        (Index ~ or ~ (sym(StringIn("<=", ">=", "!=", "==", "<", ">", "div")).! ~ Index ~ or)
           .map(Predicate.tupled)
           .rep)
           .map {
@@ -142,15 +141,20 @@ object SLParser {
           }
       )
 
+    def or[_: P]: P[ExprAST] = P(Index ~ and ~ (sym("|").! ~ Index ~ and).rep).map(leftInfix)
+
+    def and[_: P]: P[ExprAST] = P(Index ~ invert ~ (sym("&").! ~ Index ~ invert).rep).map(leftInfix)
+
+    def invert[_: P]: P[ExprAST] = P((sym("~").! ~ Index ~ invert).map(PrefixExpr.tupled) | shift)
+
+    def shift[_: P]: P[ExprAST] =
+      P((Index ~ additive ~ (sym(StringIn("<<", ">>", ">>>")).! ~ Index ~ additive).rep).map(leftInfix))
+
     def additive[_: P]: P[ExprAST] =
-      P(
-        (Index ~ multiplicative ~ (sym(StringIn("+", "-")).! ~ Index ~ multiplicative).rep)
-          .map(leftInfix))
+      P((Index ~ multiplicative ~ (sym(StringIn("+", "-")).! ~ Index ~ multiplicative).rep).map(leftInfix))
 
     def multiplicative[_: P]: P[ExprAST] =
-      P(
-        (Index ~ negative ~ (sym(StringIn("*", "/", "//", "\\")).! ~ Index ~ negative).rep)
-          .map(leftInfix))
+      P((Index ~ negative ~ (sym(StringIn("*", "/", "//", "\\")).! ~ Index ~ negative).rep).map(leftInfix))
 
     def negative[_: P]: P[ExprAST] = P((sym("-").! ~ Index ~ negative).map(PrefixExpr.tupled) | power)
 
