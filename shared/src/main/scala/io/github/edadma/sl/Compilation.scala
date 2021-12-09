@@ -212,7 +212,31 @@ class Compilation {
       case BlockExpr(stats) => compileBlock(stats)
       case SymExpr(ident)   => buf ++= Seq(PosInst(ident.pos), SLString(ident.name), if (lvalue) LvalueInst else SymInst)
       case NumberExpr(n)    => buf += SLNumber(n.toDouble)
-      case StringExpr(s)    => buf += SLString(s)
+      case StringExpr(s) =>
+        val str = new StringBuilder
+        var i = 0
+
+        while (i < s.length) s.charAt(i) match {
+          case '\\' =>
+            str +=
+              (s.charAt(i + 1) match {
+                case '\'' => '\''
+                case '"'  => '"'
+                case '/'  => '/'
+                case '\\' => '\\'
+                case 'b'  => '\b'
+                case 'f'  => '\f'
+                case 'n'  => '\n'
+                case 'r'  => '\r'
+                case 't'  => '\t'
+              })
+            i += 2
+          case c =>
+            str += c
+            i += 1
+        }
+
+        buf += SLString(str.toString)
       case InfixExpr(lpos, left, op @ ("or" | "and"), rpos, right) =>
         compileExpr(lpos, left)
         buf += DerefInst

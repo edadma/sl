@@ -186,6 +186,11 @@ object SLParser {
     def fractional[_: P]: P[Unit] = P("." ~ digits)
     def integral[_: P]: P[Unit] = P("0" | CharIn("1-9") ~ digits.?)
 
+    def hexDigit[_: P]: P[Unit] = P(CharIn("0-9a-fA-F"))
+    def unicodeEscape[_: P]: P[Unit] = P("u" ~ hexDigit ~ hexDigit ~ hexDigit ~ hexDigit)
+    def escape[_: P]: P[Unit] = P("\\" ~~ (CharIn("'\"/\\\\bfnrt") | unicodeEscape))
+    def strChars[_: P](delim: Char): P[Unit] = P(CharsWhile(c => c != delim && c != '\\'))
+
     def primary[_: P]: P[ExprAST] =
       P(
         (kw("true") | kw("false")).!.map(BooleanExpr) |
@@ -194,8 +199,8 @@ object SLParser {
           kw("null").map(_ => NullExpr) |
           P("()").map(_ => NullExpr) |
           ("`" ~~ interpolator.repX ~~ "`").map(InterpolatedStringExpr) |
-          ("'" ~~ ("\\'" | !CharIn("'\n") ~~ AnyChar).repX.! ~~ "'").map(StringExpr) |
-          ("\"" ~~ ("\\\"" | !CharIn("\"\n") ~~ AnyChar).repX.! ~~ "\"").map(StringExpr) |
+          ("'" ~~ (strChars('\'') | escape).repX.! ~~ "'").map(StringExpr) |
+          ("\"" ~~ (strChars('"') | escape).repX.! ~~ "\"").map(StringExpr) |
           "{" ~ (expression ~ ":" ~ Index ~ expression).map(MapEntry.tupled).rep(sep = ",").map(MapExpr) ~ "}" |
           "[" ~ expression.rep(sep = ",").map(SeqExpr) ~ "]" |
           "(" ~ expression ~ ")")
