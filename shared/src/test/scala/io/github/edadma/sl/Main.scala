@@ -48,32 +48,32 @@ object Main extends App {
 //      |println(x)
 //      |println(x, x++, x)
 //      |""".stripMargin
-//    """
-//      |class c(a)
-//      | x = a + 10
-//      | var y
-//      |
-//      | def m = a + 20
-//      |
-//      | def n = y + 3
-//      |
-//      |o1 = c(3)
-//      |o2 = c(4)
-//      |
-//      |println(o1.x, o1.m(), o2.x, o2.m())
-//      |o1.y = 5
-//      |o2.y = 6
-//      |println(o1.y, o1.n(), o2.y, o2.n())
-//      |""".stripMargin
     """
-      |x = 5
+      |class c(a)
+      | x = a + 10
+      | var y
       |
-      |def f(x) = x + 3
+      | def m = a + 20
       |
-      |println(f(4))
+      | def n = y + 3
       |
-      |println(`x = $x and f(4) = ${f(4)}.`)
+      |o1 = c(3)
+      |o2 = c(4)
+      |
+      |println(o1.x, o1.m(), o2.x, o2.m())
+      |o1.y = 5
+      |o2.y = 6
+      |println(o1.y, o1.n(), o2.y, o2.n())
       |""".stripMargin
+//    """
+//      |x = 5
+//      |
+//      |def f(x) = x + 3
+//      |
+//      |println(f(4))
+//      |
+//      |println(`x = $x and f(4) = ${f(4)}.`)
+//      |""".stripMargin
 //    """
 //      |var x = 1
 //      |

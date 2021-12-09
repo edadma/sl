@@ -140,11 +140,6 @@ class Compilation {
             compileExpr(pos, value)
             buf += MapInsertInst
         }
-//      case DotExpr(pos, expr, Ident(epos, elem)) =>
-//        compileExpr(pos, expr)
-//        buf += PosInst(epos)
-//        buf += SLString(elem)
-//        buf += DotInst
       case SeqExpr(elems) =>
         buf += SLValue.NIL
 
@@ -267,6 +262,10 @@ class Compilation {
 
             buf += SLInteger(args.length)
             buf += CallInst
+          case Dot(Ident(epos, elem)) =>
+            buf += PosInst(epos)
+            buf += SLString(elem)
+            buf += DotInst
         }
       case WhileExpr(label, pos, cond, body, no) =>
         val start = buf.length
