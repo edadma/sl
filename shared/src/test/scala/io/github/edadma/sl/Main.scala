@@ -65,15 +65,15 @@ object Main extends App {
 //      |o2.y = 6
 //      |println(o1.y, o1.n(), o2.y, o2.n())
 //      |""".stripMargin
-//    """
-//      |x = 5
-//      |
-//      |def f(x) = x + 3
-//      |
-//      |println(f(4))
-//      |
-//      |println(`x = $x and f(4) = ${f(4)}.`)
-//      |""".stripMargin
+    """
+      |x = 5
+      |
+      |def f(x) = x + 3
+      |
+      |println(f(4))
+      |
+      |println(`x = $x and f(4) = ${f(4)}.`)
+      |""".stripMargin
 //    """
 //      |var x = 1
 //      |
@@ -123,18 +123,18 @@ object Main extends App {
 //      |
 //      |println('done')
 //      |""".stripMargin
-    """
-        |var count = 1
-        |
-        |do
-        | println(count++)
-        | if count <= 3
-        |  continue
-        | println('loop', count)
-        |while count <= 5
-        |
-        |println('done')
-        |""".stripMargin
+//    """
+//        |var count = 1
+//        |
+//        |do
+//        | println(count++)
+//        | if count <= 3
+//        |  continue
+//        | println('loop', count)
+//        |while count <= 5
+//        |
+//        |println('done')
+//        |""".stripMargin
   parse(input, SLParser.module(_)) match {
     case Parsed.Success(t, index) =>
 //      pprintln(t)

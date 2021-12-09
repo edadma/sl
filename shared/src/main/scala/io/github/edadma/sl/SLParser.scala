@@ -31,6 +31,7 @@ object SLParser {
             (currentChar: @switch) match {
               case ' ' | '\t' => rec(current + 1, state)
               case '/'        => rec(current + 1, state = 2)
+              case '#'        => rec(current + 1, state = 1)
               case _          => ctx.freshSuccessUnit(current)
             }
           case 1 =>
@@ -40,7 +41,6 @@ object SLParser {
               rec(current + 1, 1)
           case 2 =>
             (currentChar: @switch) match {
-              case '/' => rec(current + 1, state = 1)
               case '*' => rec(current + 1, state = 3)
               case _   => ctx.freshSuccessUnit(current - 1)
             }
@@ -143,7 +143,7 @@ object SLParser {
       P(Index ~ multiplicative ~ (sym(StringIn("+", "-")).! ~/ Index ~ multiplicative).rep).map(leftInfix)
 
     def multiplicative[_: P]: P[ExprAST] =
-      P(Index ~ negative ~ (sym(StringIn("*", "/")).! ~/ Index ~ negative).rep).map(leftInfix)
+      P(Index ~ negative ~ (sym(StringIn("*", "/", "//", "\\")).! ~/ Index ~ negative).rep).map(leftInfix)
 
     def negative[_: P]: P[ExprAST] = P((sym("-").! ~ Index ~ negative).map(PrefixExpr.tupled) | power)
 
