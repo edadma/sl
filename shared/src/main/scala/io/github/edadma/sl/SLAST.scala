@@ -36,9 +36,7 @@ case class InterpolatedStringExpr(exprs: Seq[ExprAST]) extends ExprAST
 
 case class StringExpr(s: String) extends ExprAST
 
-case class IntegerExpr(n: String) extends ExprAST
-
-case class DecimalExpr(n: String) extends ExprAST
+case class NumberExpr(n: String) extends ExprAST
 
 case class BooleanExpr(b: String) extends ExprAST
 

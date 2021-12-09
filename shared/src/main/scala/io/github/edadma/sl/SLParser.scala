@@ -181,13 +181,16 @@ object SLParser {
           case (pos, expr, ops) => ApplyExpr(pos, expr, ops)
         })
 
+    def digits[_: P]: P[Unit] = P(CharsWhileIn("0-9"))
+    def exponent[_: P]: P[Unit] = P(CharIn("eE") ~ CharIn("+\\-").? ~ digits)
+    def fractional[_: P]: P[Unit] = P("." ~ digits)
+    def integral[_: P]: P[Unit] = P("0" | CharIn("1-9") ~ digits.?)
+
     def primary[_: P]: P[ExprAST] =
       P(
         (kw("true") | kw("false")).!.map(BooleanExpr) |
           ident.map(SymExpr) |
-          ((digit.repX ~~ "." ~~ digits | digits ~~ ".") ~~ (CharIn("eE").? ~~ CharIn("+\\-").? ~~ digits)).!.map(
-            DecimalExpr) |
-          digits.map(IntegerExpr) |
+          (CharIn("+\\-").? ~ integral ~ fractional.? ~ exponent.?).!.map(NumberExpr) |
           kw("null").map(_ => NullExpr) |
           P("()").map(_ => NullExpr) |
           ("`" ~~ interpolator.repX ~~ "`").map(InterpolatedStringExpr) |
@@ -196,10 +199,6 @@ object SLParser {
           "{" ~ (expression ~ ":" ~ Index ~ expression).map(MapEntry.tupled).rep(sep = ",").map(MapExpr) ~ "}" |
           "[" ~ expression.rep(sep = ",").map(SeqExpr) ~ "]" |
           "(" ~ expression ~ ")")
-
-    def digit[_: P]: P[Unit] = P(CharIn("0-9"))
-
-    def digits[_: P]: P[String] = P(digit.repX(1).!)
 
     def interpolator[_: P]: P[ExprAST] =
       P(

@@ -211,8 +211,7 @@ class Compilation {
         fixups foreach patch
       case BlockExpr(stats) => compileBlock(stats)
       case SymExpr(ident)   => buf ++= Seq(PosInst(ident.pos), SLString(ident.name), if (lvalue) LvalueInst else SymInst)
-      case IntegerExpr(n)   => buf += SLNumber(n.toDouble)
-      case DecimalExpr(n)   => buf += SLNumber(n.toDouble)
+      case NumberExpr(n)    => buf += SLNumber(n.toDouble)
       case StringExpr(s)    => buf += SLString(s)
       case InfixExpr(lpos, left, op @ ("or" | "and"), rpos, right) =>
         compileExpr(lpos, left)
