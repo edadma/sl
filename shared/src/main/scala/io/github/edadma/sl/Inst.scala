@@ -206,6 +206,7 @@ case object DotInst extends Inst {
 
     env.pop.deref match {
       case Instance(con) => env push (con.locals getOrElse (elem, SLUndefined))
+      case SLMap(m)      => env push (m getOrElse (SLString(elem), SLUndefined))
     }
   }
 }
