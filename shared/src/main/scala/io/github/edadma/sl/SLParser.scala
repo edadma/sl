@@ -118,12 +118,12 @@ object SLParser {
           condition
       )
 
-    def condition[_: P]: P[ExprAST] = P(NoCut(disjunctive))
+    def condition[_: P]: P[ExprAST] = P(disjunctive)
 
     def disjunctive[_: P]: P[ExprAST] =
-      P(Index ~ NoCut(conjunctive) ~ (kw("or").! ~/ Index ~ conjunctive).rep).map(leftInfix)
+      P(Index ~ conjunctive ~ (kw("or").! ~ Index ~ conjunctive).rep).map(leftInfix)
 
-    def conjunctive[_: P]: P[ExprAST] = P(Index ~ not ~ (kw("and").! ~/ Index ~ not).rep).map(leftInfix)
+    def conjunctive[_: P]: P[ExprAST] = P(Index ~ not ~ (kw("and").! ~ Index ~ not).rep).map(leftInfix)
 
     def not[_: P]: P[ExprAST] =
       P(
@@ -133,54 +133,65 @@ object SLParser {
 
     def comparitive[_: P]: P[ExprAST] =
       P(
-        (Index ~ NoCut(additive) ~ (sym(StringIn("<=", ">=", "!=", "==", "<", ">", "div")).! ~/ Index ~ additive)
+        (Index ~ additive ~ (sym(StringIn("<=", ">=", "!=", "==", "<", ">", "div")).! ~ Index ~ additive)
           .map(Predicate.tupled)
-          .rep(1))
-          .map(CompareExpr.tupled) | additive
+          .rep)
+          .map {
+            case (pos, left, Nil)   => left
+            case (pos, left, right) => CompareExpr(pos, left, right)
+          }
       )
 
     def additive[_: P]: P[ExprAST] =
-      P(Index ~ multiplicative ~ (sym(StringIn("+", "-")).! ~/ Index ~ multiplicative).rep).map(leftInfix)
+      P(
+        (Index ~ multiplicative ~ (sym(StringIn("+", "-")).! ~ Index ~ multiplicative).rep)
+          .map(leftInfix))
 
     def multiplicative[_: P]: P[ExprAST] =
-      P(Index ~ negative ~ (sym(StringIn("*", "/", "//", "\\")).! ~/ Index ~ negative).rep).map(leftInfix)
+      P(
+        (Index ~ negative ~ (sym(StringIn("*", "/", "//", "\\")).! ~ Index ~ negative).rep)
+          .map(leftInfix))
 
     def negative[_: P]: P[ExprAST] = P((sym("-").! ~ Index ~ negative).map(PrefixExpr.tupled) | power)
 
-    def power[_: P]: P[ExprAST] = P((Index ~ incdec ~ sym("^").! ~ Index ~ power).map(InfixExpr.tupled) | incdec)
+    def power[_: P]: P[ExprAST] =
+      P((Index ~ incdec ~ (sym("^") ~ Index ~ power).?).map {
+        case (_, left, None)                   => left
+        case (lpos, left, Some((rpos, right))) => InfixExpr(lpos, left, "^", rpos, right)
+      })
 
     def incdec[_: P]: P[ExprAST] =
       P(
         (sym(StringIn("++", "--")).! ~ Index ~ applicative).map(PrefixExpr.tupled) |
-          (Index ~ applicative ~ sym(StringIn("++", "--")).!).map(PostfixExpr.tupled) |
-          applicative
+          (Index ~ applicative ~ sym(StringIn("++", "--")).!.?).map {
+            case (_, expr, None)       => expr
+            case (pos, expr, Some(op)) => PostfixExpr(pos, expr, op)
+          }
       )
 
     def applicative[_: P]: P[ExprAST] =
       P(
-        NoCut(
-          (Index ~ dot ~ (Index ~ "(" ~/ (Index ~ expression).map(Arg.tupled).rep(sep = ","./) ~ ")")
-            .map(Args.tupled)
-            .rep(1)).map(ApplyExpr.tupled)) | dot)
+        (Index ~ dot ~ (Index ~ "(" ~ (Index ~ expression).map(Arg.tupled).rep(sep = ",") ~ ")")
+          .map(Args.tupled)
+          .rep(1)).map(ApplyExpr.tupled) | dot)
 
     def dot[_: P]: P[ExprAST] = P((Index ~ primary ~ "." ~ ident).map(DotExpr.tupled) | primary)
 
     def primary[_: P]: P[ExprAST] =
       P(
-        NoCut(
-          (kw("true") | kw("false")).!.map(BooleanExpr) |
-            ident.map(SymExpr) |
-            ((digit.repX ~~ "." ~~ digits | digits ~~ ".") ~~ (CharIn("eE").? ~~ CharIn("+\\-").? ~~ digits)).!.map(
-              DecimalExpr) |
-            digits.map(IntegerExpr) |
-            kw("null").map(_ => NullExpr) |
-            kw("()").map(_ => NullExpr) |
-            ("`" ~~/ interpolator.repX ~~ "`").map(InterpolatedStringExpr) |
-            ("'" ~~ ("\\'" | !CharIn("'\n") ~~ AnyChar).repX.! ~~ "'").map(StringExpr) |
-            ("\"" ~~ ("\\\"" | !CharIn("\"\n") ~~ AnyChar).repX.! ~~ "\"").map(StringExpr) |
-            "{" ~/ (expression ~ ":" ~ Index ~ expression).map(MapEntry.tupled).rep(sep = ",").map(MapExpr) ~ "}" |
-            "[" ~/ expression.rep(sep = ",").map(SeqExpr) ~ "]" |
-            "(" ~/ expression ~ ")"))
+        (kw("true") | kw("false")).!.map(BooleanExpr) |
+          ident.map(SymExpr) |
+          ((digit.repX ~~ "." ~~ digits | digits ~~ ".") ~~ (CharIn("eE").? ~~ CharIn("+\\-").? ~~ digits)).!.map(
+            DecimalExpr) |
+          digits.map(IntegerExpr) |
+          kw("null").map(_ => NullExpr) |
+          kw("()").map(_ => NullExpr) |
+          ("`" ~~ interpolator.repX ~~ "`").map(InterpolatedStringExpr) |
+          ("'" ~~ ("\\'" | !CharIn("'\n") ~~ AnyChar).repX.! ~~ "'").map(StringExpr) |
+          ("\"" ~~ ("\\\"" | !CharIn("\"\n") ~~ AnyChar).repX.! ~~ "\"").map(StringExpr) |
+          "{" ~ (expression ~ ":" ~ Index ~ expression).map(MapEntry.tupled).rep(sep = ",").map(MapExpr) ~ "}" |
+          "[" ~ expression.rep(sep = ",").map(SeqExpr) ~ "]" |
+          "(" ~ expression ~ ")")
 
     def digit[_: P]: P[Unit] = P(CharIn("0-9"))
 
@@ -189,9 +200,9 @@ object SLParser {
     def interpolator[_: P]: P[ExprAST] =
       P(
         P("$$").map(_ => StringExpr("$")) |
-          P("${") ~/ expression ~/ "}" |
-          P("$") ~/ ident.map(SymExpr)./ |
-          CharsWhile(c => c != '`' && c != '$').!.filter(_.nonEmpty).map(StringExpr)./
+          P("${") ~ expression ~ "}" |
+          P("$") ~ ident.map(SymExpr) |
+          CharsWhile(c => c != '`' && c != '$').!.filter(_.nonEmpty).map(StringExpr)
       )
 
     def keyword[_: P]: P[Unit] =
