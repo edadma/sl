@@ -140,11 +140,11 @@ class Compilation {
             compileExpr(pos, value)
             buf += MapInsertInst
         }
-      case DotExpr(pos, expr, Ident(epos, elem)) =>
-        compileExpr(pos, expr)
-        buf += PosInst(epos)
-        buf += SLString(elem)
-        buf += DotInst
+//      case DotExpr(pos, expr, Ident(epos, elem)) =>
+//        compileExpr(pos, expr)
+//        buf += PosInst(epos)
+//        buf += SLString(elem)
+//        buf += DotInst
       case SeqExpr(elems) =>
         buf += SLValue.NIL
 
@@ -255,22 +255,18 @@ class Compilation {
             buf += AssignInst
         }
       case ApplyExpr(fpos, expr, calls) =>
-        def generateCall(as: Args): Unit = {
-          as.args foreach {
-            case Arg(pos, expr) =>
-              compileExpr(pos, expr)
-              buf += DerefInst
-          }
-          buf += SLInteger(as.args.length)
-          // todo: as.pos wasn't pushed
-          buf += CallInst
-        }
-
         compileExpr(fpos, expr)
-        generateCall(calls.head)
 
-        for (a <- calls.tail) {
-          generateCall(a)
+        calls foreach {
+          case Args(args) =>
+            args foreach {
+              case Arg(pos, expr) =>
+                compileExpr(pos, expr)
+                buf += DerefInst
+            }
+
+            buf += SLInteger(args.length)
+            buf += CallInst
         }
       case WhileExpr(label, pos, cond, body, no) =>
         val start = buf.length

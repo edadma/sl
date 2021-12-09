@@ -171,11 +171,11 @@ object SLParser {
 
     def applicative[_: P]: P[ExprAST] =
       P(
-        (Index ~ dot ~ (Index ~ "(" ~ (Index ~ expression).map(Arg.tupled).rep(sep = ",") ~ ")")
-          .map(Args.tupled)
-          .rep(1)).map(ApplyExpr.tupled) | dot)
-
-    def dot[_: P]: P[ExprAST] = P((Index ~ primary ~ "." ~ ident).map(DotExpr.tupled) | primary)
+        (Index ~ primary ~ (("(" ~ (Index ~ expression).map(Arg.tupled).rep(sep = ",").map(Args) ~ ")") |
+          ("." ~ ident).map(Dot)).rep).map {
+          case (_, expr, Nil)   => expr
+          case (pos, expr, ops) => ApplyExpr(pos, expr, ops)
+        })
 
     def primary[_: P]: P[ExprAST] =
       P(
@@ -185,7 +185,7 @@ object SLParser {
             DecimalExpr) |
           digits.map(IntegerExpr) |
           kw("null").map(_ => NullExpr) |
-          kw("()").map(_ => NullExpr) |
+          P("()").map(_ => NullExpr) |
           ("`" ~~ interpolator.repX ~~ "`").map(InterpolatedStringExpr) |
           ("'" ~~ ("\\'" | !CharIn("'\n") ~~ AnyChar).repX.! ~~ "'").map(StringExpr) |
           ("\"" ~~ ("\\\"" | !CharIn("\"\n") ~~ AnyChar).repX.! ~~ "\"").map(StringExpr) |
@@ -205,36 +205,38 @@ object SLParser {
           CharsWhile(c => c != '`' && c != '$').!.filter(_.nonEmpty).map(StringExpr)
       )
 
-    def keyword[_: P]: P[Unit] =
-      StringIn(
-        "and",
-        "break",
-        "class",
-        "continue",
-        "def",
-        "div",
-        "do",
-        "else",
-        "elsif",
-        "extends",
-        "false",
-        "for",
-        "if",
-        "match",
-        "mod",
-        "not",
-        "null",
-        "or",
-        "then",
-        "true",
-        "val",
-        "var",
-        "while",
-        "with"
-      ) ~ (!CharPred(_.isLetterOrDigit) | End)
+    val keywords = Set(
+      "and",
+      "break",
+      "class",
+      "continue",
+      "def",
+      "div",
+      "do",
+      "else",
+      "elsif",
+      "extends",
+      "false",
+      "for",
+      "if",
+      "match",
+      "mod",
+      "not",
+      "null",
+      "or",
+      "then",
+      "true",
+      "val",
+      "var",
+      "while",
+      "with"
+    )
 
     def ident[_: P]: P[Ident] =
-      P((!keyword ~ Index ~ (CharIn("a-zA-Z_") ~~ CharIn("a-zA-Z0-9_").repX).!).map(Ident.tupled))
+      P(
+        (Index ~ (CharIn("a-zA-Z_") ~~ CharIn("a-zA-Z0-9_").repX).!)
+          .filter(s => !keywords.contains(s._2))
+          .map(Ident.tupled))
 
     def leftInfix(tree: (Int, ExprAST, Seq[(String, Int, ExprAST)])): ExprAST = {
       val (lpos, base, ops) = tree

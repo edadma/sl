@@ -62,13 +62,15 @@ case class Predicate(op: String, pos: Int, expr: ExprAST)
 
 case class InfixExpr(lpos: Int, left: ExprAST, op: String, rpos: Int, right: ExprAST) extends ExprAST
 
+case class ApplyExpr(pos: Int, expr: ExprAST, ops: Seq[Applicative]) extends ExprAST
+
+trait Applicative
+
 case class Arg(pos: Int, expr: ExprAST)
 
-case class Args(pos: Int, args: Seq[Arg])
+case class Args(args: Seq[Arg]) extends Applicative
 
-case class ApplyExpr(pos: Int, expr: ExprAST, calls: Seq[Args]) extends ExprAST
-
-case class DotExpr(pos: Int, expr: ExprAST, elem: Ident) extends ExprAST
+case class Dot(elem: Ident) extends Applicative
 
 case class ConditionalExpr(pos: Int, cond: ExprAST, yes: ExprAST, no: Option[ExprAST]) extends ExprAST
 
