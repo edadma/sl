@@ -1,5 +1,7 @@
 package io.github.edadma.sl
 
+import io.github.edadma.dal.{DALNumber, IntType}
+
 import scala.collection.mutable
 
 abstract class Env {
@@ -40,11 +42,11 @@ abstract class Env {
 
   def pos(p: Int): Unit = _pos = Some(p)
 
-  def pushn(n: Number): Unit = push(SLNumber(n))
+  def pushn(n: DALNumber): Unit = push(SLNumber(n))
 
   def pushb(b: Boolean): Unit = push(SLBoolean(b))
 
-  def popn: Number =
+  def popn: DALNumber =
     pop.deref match {
       case SLNumber(n) => n
       case x           => problem(s"number was expected, not '$x'")
@@ -64,8 +66,8 @@ abstract class Env {
 
   def popi: Int =
     pop.deref match {
-      case SLInteger(n) => n
-      case x            => problem(s"integer was expected, not '$x'")
+      case SLNumber(DALNumber(IntType, n: java.lang.Integer)) => n
+      case x                                                  => problem(s"integer was expected, not '$x'")
     }
 
   def pops: String = pop.deref.toString

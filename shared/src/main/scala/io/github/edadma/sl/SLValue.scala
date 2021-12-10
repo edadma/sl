@@ -4,6 +4,8 @@ import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 import scala.language.postfixOps
 
+import io.github.edadma.dal._
+
 trait SLValue extends Inst {
   def clas: SLClass
 
@@ -30,16 +32,10 @@ object SLValue {
   val EMPTY: SLMap = SLMap(Map())
   val FALSE: SLBoolean = SLBoolean(false)
   val TRUE: SLBoolean = SLBoolean(true)
-  val ZERO: SLNumber = SLNumber(0)
-  val ONE: SLNumber = SLNumber(1)
+  val ZERO: SLNumber = SLNumber(DALNumber(0))
+  val ONE: SLNumber = SLNumber(DALNumber(1))
   val NIL: SLList = SLList(Nil)
 
-}
-
-case class SLInteger(n: Int) extends SLValue {
-  val clas: SLClass = PrimitiveClass.NumberClass
-
-  override def toString: String = n.toString
 }
 
 case object SLVoid extends SLValue {
@@ -60,14 +56,10 @@ case object SLNull extends SLValue {
   override def toString: String = "null"
 }
 
-case class SLNumber(n: Number) extends SLValue {
+case class SLNumber(n: DALNumber) extends SLValue {
   val clas: SLClass = PrimitiveClass.NumberClass
 
-  override def toString: String = {
-    val d = n.doubleValue
-
-    if (d.isWhole) n.longValue.toString else d.toString
-  }
+  override def toString: String = n.value.toString
 }
 
 case class SLList(l: List[SLValue]) extends SLValue {

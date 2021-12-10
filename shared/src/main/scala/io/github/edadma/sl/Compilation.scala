@@ -27,10 +27,10 @@ class Compilation {
     def patchBreaks(): Unit = breaks foreach patch
   }
 
-  def patch(fixup: Int): Unit = buf(fixup) = SLInteger(buf.length - fixup - 2)
+  def patch(fixup: Int): Unit = buf(fixup) = SLNumber(buf.length - fixup - 2)
 
   def loop(start: Int, inst: Inst = BranchInst): Unit = {
-    buf += SLInteger(-(buf.length - start) - 2)
+    buf += SLNumber(-(buf.length - start) - 2)
     buf += inst
   }
 
@@ -284,7 +284,7 @@ class Compilation {
                 buf += DerefInst
             }
 
-            buf += SLInteger(args.length)
+            buf += SLNumber(args.length)
             buf += CallInst
           case Dot(Ident(epos, elem)) =>
             buf += PosInst(epos)
