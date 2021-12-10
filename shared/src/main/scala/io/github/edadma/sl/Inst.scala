@@ -20,6 +20,15 @@ case object AddInst extends Inst {
   def execute(env: Env): Unit = env pushn (env.popn.doubleValue + env.popn.doubleValue)
 }
 
+case object RangeInst extends Inst {
+  def execute(env: Env): Unit = {
+    val end = env.popi
+    val start = env.popi
+
+    env push SLRange(start, end)
+  }
+}
+
 case object SubInst extends Inst {
   def execute(env: Env): Unit = {
     val subtrahend = env.popn.doubleValue

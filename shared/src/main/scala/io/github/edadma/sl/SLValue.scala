@@ -96,6 +96,13 @@ case class SLStringBuilder(builder: StringBuilder = new StringBuilder) extends S
   override def toString: String = builder.toString
 }
 
+case class SLRange(start: Int, end: Int) extends SLValue {
+  val clas: SLClass = PrimitiveClass.StringClass
+  val range = start to end
+
+  override def toString: String = s"$start..$end"
+}
+
 trait Callable {
   def call(env: Env, args: Seq[SLValue]): Unit
 }

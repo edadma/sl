@@ -132,14 +132,20 @@ object SLParser {
 
     def comparitive[_: P]: P[ExprAST] =
       P(
-        (Index ~ or ~ (sym(StringIn("<=", ">=", "!=", "==", "<", ">", "div")).! ~ Index ~ or)
+        (Index ~ range ~ (sym(StringIn("<=", ">=", "!=", "==", "<", ">", "div")).! ~ Index ~ range)
           .map(Predicate.tupled)
           .rep)
           .map {
-            case (pos, left, Nil)   => left
+            case (_, left, Nil)     => left
             case (pos, left, right) => CompareExpr(pos, left, right)
           }
       )
+
+    def range[_: P]: P[ExprAST] =
+      P((Index ~ or ~ (sym(StringIn("..")).! ~ Index ~ or).?).map {
+        case (_, expr, None)                       => expr
+        case (lpos, left, Some((op, rpos, right))) => InfixExpr(lpos, left, op, rpos, right)
+      })
 
     def or[_: P]: P[ExprAST] = P(Index ~ and ~ (sym("|").! ~ Index ~ and).rep).map(leftInfix)
 

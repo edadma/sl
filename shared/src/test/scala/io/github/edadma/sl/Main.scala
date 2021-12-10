@@ -127,7 +127,7 @@ object Main extends App {
 //        |println('done')
 //        |""".stripMargin
     """
-      |println("as\"df")
+      |println(1..5)
       |""".stripMargin
   parse(input, SLParser.module(_)) match {
     case Parsed.Success(t, index) =>
