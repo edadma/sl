@@ -1,5 +1,7 @@
 package io.github.edadma.sl
 
+import io.github.edadma.dal.{BasicDAL, DoubleType, PrecisionDAL}
+
 import scala.collection.mutable
 import scala.collection.mutable.{ArrayBuffer, ListBuffer}
 
@@ -211,7 +213,14 @@ class Compilation {
         fixups foreach patch
       case BlockExpr(stats) => compileBlock(stats)
       case SymExpr(ident)   => buf ++= Seq(PosInst(ident.pos), SLString(ident.name), if (lvalue) LvalueInst else SymInst)
-      case NumberExpr(n)    => buf += SLNumber(n.toDouble)
+      case NumberExpr(n) =>
+        val (t, v) =
+          if (n.contains('.') || n.contains('e') || n.contains('E'))
+            (DoubleType, n.toDouble.asInstanceOf[Number])
+          else
+            PrecisionDAL.maybeDemote(BigInt(n))
+
+        buf += SLNumber(t, v)
       case StringExpr(s) =>
         val str = new StringBuilder
         var i = 0

@@ -1,5 +1,7 @@
 package io.github.edadma.sl
 
+import io.github.edadma.dal.BasicDAL
+
 trait Inst {
   def execute(env: Env): Unit
 }
@@ -9,7 +11,7 @@ case class PosInst(p: Int) extends Inst {
 }
 
 case object NegInst extends Inst {
-  def execute(env: Env): Unit = env pushn -env.popn.doubleValue
+  def execute(env: Env): Unit = env push BasicDAL.negate(env.popn, SLNumber.apply)
 }
 
 case object NotInst extends Inst {
@@ -17,7 +19,9 @@ case object NotInst extends Inst {
 }
 
 case object AddInst extends Inst {
-  def execute(env: Env): Unit = env pushn (env.popn.doubleValue + env.popn.doubleValue)
+  val OP: Symbol = Symbol("+")
+
+  def execute(env: Env): Unit = env push BasicDAL.compute(OP, env.popn, env.popn, SLNumber.apply)
 }
 
 case object RangeInst extends Inst {
@@ -31,26 +35,30 @@ case object RangeInst extends Inst {
 
 case object SubInst extends Inst {
   def execute(env: Env): Unit = {
-    val subtrahend = env.popn.doubleValue
+    val subtrahend = env.popn
+    val OP: Symbol = Symbol("-")
 
-    env pushn (env.popn.doubleValue - subtrahend)
+    env push BasicDAL.compute(OP, env.popn, subtrahend, SLNumber.apply)
   }
 }
 
 case object MulInst extends Inst {
-  def execute(env: Env): Unit = env pushn (env.popn.doubleValue * env.popn.doubleValue)
+  val OP: Symbol = Symbol("*")
+
+  def execute(env: Env): Unit = env push BasicDAL.compute(OP, env.popn, env.popn, SLNumber.apply)
 }
 
 case object DivInst extends Inst {
   def execute(env: Env): Unit = {
-    val divisor = env.popn.doubleValue
+    val divisor = env.popn
+    val OP: Symbol = Symbol("/")
 
-    env pushn (env.popn.doubleValue / divisor)
+    env push BasicDAL.compute(OP, env.popn, divisor, SLNumber.apply)
   }
 }
 
 case object LteInst extends Inst {
-  def execute(env: Env): Unit = env pushb (env.popn.doubleValue >= env.popn.doubleValue)
+  def execute(env: Env): Unit = env pushb (env.popn >= env.popn)
 }
 
 case object LtInst extends Inst {

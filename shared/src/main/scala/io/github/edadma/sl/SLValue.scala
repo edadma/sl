@@ -32,8 +32,8 @@ object SLValue {
   val EMPTY: SLMap = SLMap(Map())
   val FALSE: SLBoolean = SLBoolean(false)
   val TRUE: SLBoolean = SLBoolean(true)
-  val ZERO: SLNumber = SLNumber(DALNumber(0))
-  val ONE: SLNumber = SLNumber(DALNumber(1))
+  val ZERO: SLNumber = SLNumber(0)
+  val ONE: SLNumber = SLNumber(1)
   val NIL: SLList = SLList(Nil)
 
 }
@@ -56,10 +56,16 @@ case object SLNull extends SLValue {
   override def toString: String = "null"
 }
 
-case class SLNumber(n: DALNumber) extends SLValue {
+object SLNumber {
+  def apply(n: Int): SLNumber = SLNumber(IntType, n)
+
+  def apply(n: (Type, Number)): SLNumber = SLNumber(n._1, n._2)
+}
+
+case class SLNumber(typ: Type, value: Number) extends SLValue with TypedNumber {
   val clas: SLClass = PrimitiveClass.NumberClass
 
-  override def toString: String = n.value.toString
+  override def toString: String = value.toString
 }
 
 case class SLList(l: List[SLValue]) extends SLValue {
