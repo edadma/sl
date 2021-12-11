@@ -268,6 +268,7 @@ class Compilation {
             case "*"   => MulInst
             case "/"   => DivInst
             case "mod" => ModInst
+            case "^"   => PowInst
             case ".."  => RangeInst
           })
       case AssignExpr(lpos, lvalue, rpos, expr) =>

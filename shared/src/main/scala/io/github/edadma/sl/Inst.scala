@@ -24,6 +24,16 @@ case object AddInst extends Inst {
   def execute(env: Env): Unit = env push ComplexDAL.compute(op, env.popn, env.popn, SLNumber.from)
 }
 
+case object PowInst extends Inst {
+  val op: Symbol = Symbol("^")
+
+  def execute(env: Env): Unit = {
+    val power = env.popn
+
+    env push ComplexDAL.compute(op, env.popn, power, SLNumber.from)
+  }
+}
+
 case object RangeInst extends Inst {
   def execute(env: Env): Unit = {
     val end = env.popi
