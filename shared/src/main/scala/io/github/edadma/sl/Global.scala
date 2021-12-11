@@ -1,15 +1,19 @@
 package io.github.edadma.sl
 
+import io.github.edadma.dal.ComplexBigIntType
+import io.github.edadma.numbers.ComplexBigInt
+
 import scala.language.postfixOps
 
 object Global {
 
-  val map: Map[String, SLNativeFunction] =
+  val map: Map[String, SLValue] =
     List(
-      SLNativeFunction("println", args => {
+      "println" -> SLNativeFunction("println", args => {
         println(args mkString ", ")
         SLVoid
-      })
-    ) map (n => n.name -> n) toMap
+      }),
+      "i" -> SLNumber(ComplexBigIntType, ComplexBigInt.i)
+    ) toMap
 
 }

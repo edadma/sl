@@ -1,12 +1,13 @@
 package io.github.edadma.sl
 
-import io.github.edadma.dal.{BasicDAL, DoubleType, PrecisionDAL}
+import io.github.edadma.dal.{ComplexDAL, DoubleType}
 
 import scala.collection.mutable
 import scala.collection.mutable.{ArrayBuffer, ListBuffer}
 
 class Compilation {
-  val NOPOS = -1
+  private val NOPOS = -1
+
   val decls = new mutable.HashMap[String, DeclarationAST]
 
   trait BooleanCompilation
@@ -29,10 +30,10 @@ class Compilation {
     def patchBreaks(): Unit = breaks foreach patch
   }
 
-  def patch(fixup: Int): Unit = buf(fixup) = SLNumber(buf.length - fixup - 2)
+  def patch(fixup: Int): Unit = buf(fixup) = SLNumber.from(buf.length - fixup - 2)
 
   def loop(start: Int, inst: Inst = BranchInst): Unit = {
-    buf += SLNumber(-(buf.length - start) - 2)
+    buf += SLNumber.from(-(buf.length - start) - 2)
     buf += inst
   }
 
@@ -218,7 +219,7 @@ class Compilation {
           if (n.contains('.') || n.contains('e') || n.contains('E'))
             (DoubleType, n.toDouble.asInstanceOf[Number])
           else
-            PrecisionDAL.maybeDemote(BigInt(n))
+            ComplexDAL.maybeDemote(BigInt(n))
 
         buf += SLNumber(t, v)
       case StringExpr(s) =>
@@ -293,7 +294,7 @@ class Compilation {
                 buf += DerefInst
             }
 
-            buf += SLNumber(args.length)
+            buf += SLNumber.from(args.length)
             buf += CallInst
           case Dot(Ident(epos, elem)) =>
             buf += PosInst(epos)
