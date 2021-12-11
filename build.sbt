@@ -26,7 +26,7 @@ lazy val sl = crossProject(JSPlatform, JVMPlatform, NativePlatform)
     libraryDependencies ++= Seq(
       "io.github.edadma" %%% "cross-platform" % "0.1.1",
       "io.github.edadma" %%% "datetime" % "0.1.11",
-      "io.github.edadma" %%% "dal" % "0.1.2",
+      "io.github.edadma" %%% "dal" % "0.1.5",
     ),
     libraryDependencies ++= Seq(
       "com.github.scopt" %%% "scopt" % "4.0.1",
