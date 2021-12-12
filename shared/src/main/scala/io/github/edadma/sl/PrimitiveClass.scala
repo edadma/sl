@@ -19,5 +19,4 @@ object PrimitiveClass {
   val RangeClass: PrimitiveClass = PrimitiveClass("Range", Seq(AnyClass))
   val FunctionClass: PrimitiveClass = PrimitiveClass("Function", Seq(AnyClass))
   val ClassClass: PrimitiveClass = PrimitiveClass("Class", Seq(AnyClass))
-  val CodeClass: PrimitiveClass = PrimitiveClass("$Code", Seq(AnyClass))
 }

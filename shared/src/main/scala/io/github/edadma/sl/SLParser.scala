@@ -103,16 +103,18 @@ object SLParser {
 
     def expressionOrBlock[_: P]: P[ExprAST] = P(expression | blockExpression)
 
-    def optElse[_: P]: P[Option[ExprAST]] = P((nl.? ~ "else" ~ expressionOrBlock).?)
+    def optElse[_: P]: P[Option[ExprAST]] = P((nl.? ~ kw("else") ~ expressionOrBlock).?)
 
     def construct[_: P]: P[ExprAST] =
       P(
-        "if" ~ (Index ~ condition ~ ("then" ~ expression | "then".? ~ blockExpression) ~ optElse)
+        kw("if") ~ (Index ~ condition ~ (kw("then") ~ expression | kw("then").? ~ blockExpression) ~ optElse)
           .map(ConditionalExpr.tupled) |
-          ((ident ~ ":").? ~ "while" ~ Index ~ condition ~ ("do" ~ expression | "do".? ~ blockExpression) ~ optElse)
+          ((ident ~ ":").? ~ kw("while") ~ Index ~ condition ~ (kw("do") ~ expression | kw("do").? ~ blockExpression) ~ optElse)
             .map(WhileExpr.tupled) |
-          ((ident ~ ":").? ~ "do" ~ expressionOrBlock ~ nl.? ~ "while" ~ Index ~ condition ~ optElse)
+          ((ident ~ ":").? ~ kw("do") ~ expressionOrBlock ~ nl.? ~ kw("while") ~ Index ~ condition ~ optElse)
             .map(DoWhileExpr.tupled) |
+          ((ident ~ ":").? ~ "for" ~ Index ~ ident ~ kw("in") ~ condition ~ (kw("do") ~ expression | kw("do").? ~ blockExpression) ~ optElse)
+            .map(ForExpr.tupled) |
           (Index ~ "break" ~ ident.? ~ ("(" ~ expression ~ ")").?).map(BreakExpr.tupled) |
           (Index ~ "continue" ~ ident.?).map(ContinueExpr.tupled) |
           condition
