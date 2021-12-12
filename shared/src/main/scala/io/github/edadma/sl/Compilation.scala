@@ -84,6 +84,18 @@ class Compilation {
           case Some(_: VarStat) =>
           case _                => problem(pos, s"symbol not variable: $name")
         }
+      case ExpressionStat(f @ ForExpr(_, Ident(pos, name), _, _, _, _)) =>
+        decls get name match {
+          case None =>
+            decls(name) = ValStat(Ident(pos, name), null)
+
+            val it = s"$name#${decls.size}"
+
+            decls(it) = ValStat(Ident(pos, it), null)
+            f.it = it
+          case Some(_: VarStat) =>
+          case _                => problem(pos, s"symbol not variable: $name")
+        }
       case _ =>
     }
   }
@@ -301,6 +313,37 @@ class Compilation {
             buf += PosInst(epos)
             buf += SLString(elem)
             buf += DotInst
+        }
+      case f @ ForExpr(label, index, pos, iterable, body, no) =>
+        buf += SLString(f.it)
+        compileExpr(pos, iterable)
+        buf += IterInst
+        buf += ConstInst
+
+        val start = buf.length
+
+        loops push new Loop
+        buf += SLString(f.it)
+        buf += SymInst
+        buf += HasNextInst
+
+        val exit = forward(BranchIfFalseInst)
+
+        buf += SLString(index.name)
+        buf += SLString(f.it)
+        buf += SymInst
+        buf += NextInst
+        buf += ConstInst
+        compileExpr(NOPOS, body)
+        buf += DropInst
+        loop(start)
+        patch(exit)
+
+        if (no.isDefined)
+          compileExpr(NOPOS, no.get)
+        else {
+          loops.top.patchBreaks()
+          buf += SLVoid
         }
       case WhileExpr(label, pos, cond, body, no) =>
         val start = buf.length

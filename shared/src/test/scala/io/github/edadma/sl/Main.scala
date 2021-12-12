@@ -126,9 +126,26 @@ object Main extends App {
 //        |
 //        |println('done')
 //        |""".stripMargin
+//    """
+//      |for i in 1..5
+//      | if i > 3 then break
+//      | println(i)
+//      |else
+//      | println('else')
+//      |
+//      |println('done')
+//      |""".stripMargin
     """
-      |println(i^2)
-      |""".stripMargin
+    |var i = 1
+    |
+    |while true
+    | if i > 3 then break
+    | println(i++)
+    |else
+    | println('else')
+    |
+    |println('done')
+    |""".stripMargin
   parse(input, SLParser.module(_)) match {
     case Parsed.Success(t, index) =>
 //      pprintln(t)

@@ -68,12 +68,26 @@ case class SLNumber(typ: Type, value: Number) extends SLValue with TypedNumber {
   override def toString: String = value.toString
 }
 
-case class SLList(l: List[SLValue]) extends SLValue {
-  val clas: SLClass = PrimitiveClass.ListClass
+trait SLIterable {
+  def iterator: Iterator[SLValue]
 }
 
-case class SLMap(m: Map[SLValue, SLValue]) extends SLValue {
+case class SLIterator(it: Iterator[SLValue]) extends SLValue with SLIterable {
+  val clas: SLClass = PrimitiveClass.IteratorClass
+
+  def iterator: Iterator[SLValue] = it.iterator
+}
+
+case class SLList(l: List[SLValue]) extends SLValue with SLIterable {
+  val clas: SLClass = PrimitiveClass.ListClass
+
+  def iterator: Iterator[SLValue] = l.iterator
+}
+
+case class SLMap(m: Map[SLValue, SLValue]) extends SLValue with SLIterable {
   val clas: SLClass = PrimitiveClass.MapClass
+
+  def iterator: Iterator[SLValue] = m.iterator map { case (k, v) => SLList(List(k, v)) }
 }
 
 case class SLBoolean(b: Boolean) extends SLValue {
@@ -82,8 +96,10 @@ case class SLBoolean(b: Boolean) extends SLValue {
   override def toString: String = b.toString
 }
 
-case class SLString(s: String) extends SLValue {
+case class SLString(s: String) extends SLValue with SLIterable {
   val clas: SLClass = PrimitiveClass.StringClass
+
+  def iterator: Iterator[SLValue] = s.iterator map (c => SLString(c.toString))
 
   override def toString: String = s
 }
@@ -94,9 +110,11 @@ case class SLStringBuilder(builder: StringBuilder = new StringBuilder) extends S
   override def toString: String = builder.toString
 }
 
-case class SLRange(start: Int, end: Int) extends SLValue {
+case class SLRange(start: Int, end: Int) extends SLValue with SLIterable {
   val clas: SLClass = PrimitiveClass.StringClass
-  val range = start to end
+  val range: Range.Inclusive = start to end
+
+  def iterator: Iterator[SLValue] = range.iterator map SLNumber.from
 
   override def toString: String = s"$start..$end"
 }

@@ -277,6 +277,18 @@ case object CallInst extends Inst {
   }
 }
 
+case object IterInst extends Inst {
+  def execute(env: Env): Unit = env push SLIterator(env.pop.deref.asInstanceOf[SLIterable].iterator)
+}
+
+case object HasNextInst extends Inst {
+  def execute(env: Env): Unit = env pushb env.pop.deref.asInstanceOf[SLIterator].it.hasNext
+}
+
+case object NextInst extends Inst {
+  def execute(env: Env): Unit = env push env.pop.deref.asInstanceOf[SLIterator].it.next()
+}
+
 case object SymInst extends Inst {
   def execute(env: Env): Unit = env push env.symbol(env.pops)
 }
