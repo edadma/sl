@@ -113,10 +113,10 @@ object SLParser {
             .map(WhileExpr.tupled) |
           ((ident ~ ":").? ~ kw("do") ~ expressionOrBlock ~ nl.? ~ kw("while") ~ Index ~ condition ~ optElse)
             .map(DoWhileExpr.tupled) |
-          ((ident ~ ":").? ~ "for" ~ Index ~ ident ~ kw("in") ~ condition ~ (kw("do") ~ expression | kw("do").? ~ blockExpression) ~ optElse)
+          ((ident ~ ":").? ~ kw("for") ~ Index ~ ident ~ kw("in") ~ condition ~ (kw("do") ~ expression | kw("do").? ~ blockExpression) ~ optElse)
             .map(ForExpr.tupled) |
-          (Index ~ "break" ~ ident.? ~ ("(" ~ expression ~ ")").?).map(BreakExpr.tupled) |
-          (Index ~ "continue" ~ ident.?).map(ContinueExpr.tupled) |
+          (Index ~ kw("break") ~ ident.? ~ ("(" ~ expression ~ ")").?).map(BreakExpr.tupled) |
+          (Index ~ kw("continue") ~ ident.?).map(ContinueExpr.tupled) |
           condition
       )
 
