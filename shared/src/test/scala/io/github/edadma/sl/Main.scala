@@ -138,14 +138,14 @@ object Main extends App {
     """
     |var i = 1
     |
-    |while true
-    | if i > 3 then break
+    |while i <= 5
     | println(i++)
     |else
     | println('else')
     |
     |println('done')
     |""".stripMargin
+//    "println(1 <= 3)"
   parse(input, SLParser.module(_)) match {
     case Parsed.Success(t, index) =>
 //      pprintln(t)

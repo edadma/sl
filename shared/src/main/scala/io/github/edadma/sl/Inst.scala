@@ -70,7 +70,7 @@ case object DivInst extends Inst {
 }
 
 case object LteInst extends Inst {
-  val op: Symbol = Symbol("<")
+  val op: Symbol = Symbol(">=")
 
   def execute(env: Env): Unit = env pushb ComplexDAL.relate(op, env.popn, env.popn)
 }
@@ -105,7 +105,7 @@ case object GteInst extends Inst {
 }
 
 case object GtInst extends Inst {
-  val op: Symbol = Symbol(">=")
+  val op: Symbol = Symbol("<")
 
   def execute(env: Env): Unit = env pushb ComplexDAL.relate(op, env.popn, env.popn)
 }
