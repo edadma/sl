@@ -162,15 +162,15 @@ object SLParser {
       P((Index ~ multiplicative ~ (sym(StringIn("+", "-")).! ~ Index ~ multiplicative).rep).map(leftInfix))
 
     def multiplicative[_: P]: P[ExprAST] =
-      P((Index ~ negative ~ (sym(StringIn("*", "/", "//", "\\")).! ~ Index ~ negative).rep).map(leftInfix))
-
-    def negative[_: P]: P[ExprAST] = P((sym("-").! ~ Index ~ negative).map(PrefixExpr.tupled) | power)
+      P((Index ~ power ~ (sym(StringIn("*", "/", "//", "\\")).! ~ Index ~ power).rep).map(leftInfix))
 
     def power[_: P]: P[ExprAST] =
-      P((Index ~ incdec ~ (sym("^") ~ Index ~ power).?).map {
+      P((Index ~ negative ~ (sym("^") ~ Index ~ power).?).map {
         case (_, left, None)                   => left
         case (lpos, left, Some((rpos, right))) => InfixExpr(lpos, left, "^", rpos, right)
       })
+
+    def negative[_: P]: P[ExprAST] = P((sym("-").! ~ Index ~ negative).map(PrefixExpr.tupled) | incdec)
 
     def incdec[_: P]: P[ExprAST] =
       P(

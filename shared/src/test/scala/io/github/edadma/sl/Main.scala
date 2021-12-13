@@ -7,19 +7,19 @@ import scala.annotation.tailrec
 
 object Main extends App {
   val input =
-//    """
-//      |def p(b)
-//      | if b then
-//      |  println('yes')
-//      |  println('wow')
-//      | else
-//      |  println('no')
-//      |  println('wee')
-//      |
-//      |p(true)
-//      |p(false)
-//      |println('done')
-//      |""".stripMargin
+    """
+      |def p(b)
+      | if b 
+      |  println('yes')
+      |  println('wow')
+      | else
+      |  println('no')
+      |  println('wee')
+      |
+      |p(true)
+      |p(false)
+      |println('done')
+      |""".stripMargin
 //    """
 //      |var count = 1
 //      |
@@ -126,15 +126,15 @@ object Main extends App {
 //        |
 //        |println('done')
 //        |""".stripMargin
-    """
-      |for i in 1..5
-      | if i > 3 then break
-      | println(i)
-      |else
-      | println('else')
-      |
-      |println('done')
-      |""".stripMargin
+//    """
+//      |for i in 1..5
+//      | if i > 3 then break
+//      | println(i)
+//      |else
+//      | println('else')
+//      |
+//      |println('done')
+//      |""".stripMargin
 //    "println(1 <= 3)"
   parse(input, SLParser.module(_)) match {
     case Parsed.Success(t, index) =>
