@@ -14,8 +14,6 @@ abstract class Env {
 
   def symbol(name: String): SLValue
 
-  def lvalue(name: String): SLValue
-
   def run(): Unit =
     while (act.ip < act.code.length) {
       val inst = act.code(act.ip)
@@ -84,7 +82,5 @@ class ModuleEnv(code: Code) extends Env {
   def symbol(name: String): SLValue = {
     act.symbol(name) getOrElse problem(s"symbol not found: $name")
   }
-
-  def lvalue(name: String): SLValue = act.symbol(name) getOrElse act.define(name, new VarMutable(SLNull))
 
 }

@@ -76,6 +76,8 @@ case class SLIterator(it: Iterator[SLValue]) extends SLValue with SLIterable {
   val clas: SLClass = PrimitiveClass.IteratorClass
 
   def iterator: Iterator[SLValue] = it.iterator
+
+  override def toString: String = "[iterator]"
 }
 
 case class SLList(l: List[SLValue]) extends SLValue with SLIterable {

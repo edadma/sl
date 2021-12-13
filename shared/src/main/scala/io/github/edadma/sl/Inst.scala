@@ -293,8 +293,13 @@ case object SymInst extends Inst {
   def execute(env: Env): Unit = env push env.symbol(env.pops)
 }
 
-case object LvalueInst extends Inst {
-  def execute(env: Env): Unit = env push env.lvalue(env.pops)
+case object VarInst extends Inst {
+  def execute(env: Env): Unit = {
+    val value = env.pop.deref
+    val name = env.pops
+
+    env push env.act.define(name, new VarMutable(value))
+  }
 }
 
 case object RetInst extends Inst {

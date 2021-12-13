@@ -30,12 +30,36 @@ class Compilation {
     def patchBreaks(): Unit = breaks foreach patch
   }
 
+  def forward(br: Inst): Int = {
+    val len = buf.length
+
+    buf += null
+    buf += br
+    len
+  }
+
   def patch(fixup: Int): Unit = buf(fixup) = SLNumber.from(buf.length - fixup - 2)
 
   def loop(start: Int, inst: Inst = BranchInst): Unit = {
     buf += SLNumber.from(-(buf.length - start) - 2)
     buf += inst
   }
+
+  def loopEnd(els: Option[ExprAST]): Unit =
+    if (els.isDefined) {
+      compileExpr(NOPOS, els.get)
+
+      if (loops.top.breaks.nonEmpty) {
+        val elsjump = forward(BranchIfFalseInst)
+
+        loops.top.patchBreaks()
+        buf += SLVoid
+        patch(elsjump)
+      }
+    } else {
+      loops.top.patchBreaks()
+      buf += SLVoid
+    }
 
   def code: Code = new Code(buf)
 
@@ -104,14 +128,6 @@ class Compilation {
                   expr: ExprAST,
                   bool: BooleanCompilation = null,
                   lvalue: Boolean = false): ArrayBuffer[Inst] = {
-    def forward(br: Inst): Int = {
-      val len = buf.length
-
-      buf += null
-      buf += br
-      len
-    }
-
     if (pos == NOPOS)
       buf += PosInst(pos)
 
@@ -225,7 +241,7 @@ class Compilation {
 
         fixups foreach patch
       case BlockExpr(stats) => compileBlock(stats)
-      case SymExpr(ident)   => buf ++= Seq(PosInst(ident.pos), SLString(ident.name), if (lvalue) LvalueInst else SymInst)
+      case SymExpr(ident)   => buf ++= Seq(PosInst(ident.pos), SLString(ident.name), SymInst)
       case NumberExpr(n) =>
         val (t, v) =
           if (n.contains('.') || n.contains('e') || n.contains('E'))
@@ -314,7 +330,7 @@ class Compilation {
             buf += SLString(elem)
             buf += DotInst
         }
-      case f @ ForExpr(label, index, pos, iterable, body, no) =>
+      case f @ ForExpr(label, index, pos, iterable, body, els) =>
         buf += SLString(f.it)
         compileExpr(pos, iterable)
         buf += IterInst
@@ -338,14 +354,8 @@ class Compilation {
         buf += DropInst
         loop(start)
         patch(exit)
-
-        if (no.isDefined)
-          compileExpr(NOPOS, no.get)
-        else {
-          loops.top.patchBreaks()
-          buf += SLVoid
-        }
-      case WhileExpr(label, pos, cond, body, no) =>
+        loopEnd(els)
+      case WhileExpr(label, pos, cond, body, els) =>
         val start = buf.length
 
         loops push new Loop
@@ -357,14 +367,8 @@ class Compilation {
         buf += DropInst
         loop(start)
         patch(exit)
-
-        if (no.isDefined)
-          compileExpr(NOPOS, no.get)
-        else {
-          loops.top.patchBreaks()
-          buf += SLVoid
-        }
-      case DoWhileExpr(label, body, pos, cond, no) =>
+        loopEnd(els)
+      case DoWhileExpr(label, body, pos, cond, els) =>
         val start = buf.length
 
         loops push new Loop
@@ -373,13 +377,7 @@ class Compilation {
         buf += DropInst
         compileExpr(pos, cond)
         loop(start, BranchIfTrueInst)
-
-        if (no.isDefined)
-          compileExpr(NOPOS, no.get)
-        else {
-          loops.top.patchBreaks()
-          buf += SLVoid
-        }
+        loopEnd(els)
       case ConditionalExpr(pos, cond, yes, no) =>
         compileExpr(pos, cond)
 
@@ -420,19 +418,17 @@ class Compilation {
       case d @ VarStat(Ident(pos, name), init) =>
         buf += PosInst(pos)
         buf += SLString(name)
-        buf += LvalueInst
 
         if (init.isDefined) {
           compileExpr(NOPOS, init.get)
-          buf += AssignInst
         } else
-          buf += DropInst
+          buf += SLNull
 
+        buf += VarInst
         d.initialized = true
       case v @ ValStat(Ident(pos, name), init, _) =>
         buf += PosInst(pos)
         buf += SLString(name)
-        buf += SymInst
         compileExpr(NOPOS, init)
         buf += ConstInst
         v.initialized = true
